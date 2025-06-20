@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,9 +5,15 @@ import { ArrowRight, Mic, CheckCircle, BarChart3, Users, Zap, BookOpen } from "l
 import { useState } from "react";
 import { InterviewSetup } from "@/components/InterviewSetup";
 import { Dashboard } from "@/components/Dashboard";
+import { VoiceInterview } from "@/components/VoiceInterview";
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState<'landing' | 'setup' | 'dashboard'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'setup' | 'dashboard' | 'voice-interview'>('landing');
+  const [interviewConfig, setInterviewConfig] = useState({
+    industry: '',
+    level: '',
+    type: ''
+  });
 
   const features = [
     {
@@ -38,12 +43,45 @@ const Index = () => {
     "Sales", "Consulting", "Data Science", "Design", "Operations", "HR"
   ];
 
+  const handleInterviewComplete = (config: { industry: string; level: string; type: string }) => {
+    setInterviewConfig(config);
+    setCurrentView('dashboard');
+  };
+
+  const handleStartVoiceInterview = () => {
+    if (!interviewConfig.industry) {
+      setCurrentView('setup');
+    } else {
+      setCurrentView('voice-interview');
+    }
+  };
+
   if (currentView === 'setup') {
-    return <InterviewSetup onBack={() => setCurrentView('landing')} onComplete={() => setCurrentView('dashboard')} />;
+    return (
+      <InterviewSetup 
+        onBack={() => setCurrentView('landing')} 
+        onComplete={handleInterviewComplete} 
+      />
+    );
   }
 
   if (currentView === 'dashboard') {
-    return <Dashboard onBack={() => setCurrentView('landing')} />;
+    return (
+      <Dashboard 
+        onBack={() => setCurrentView('landing')} 
+        onStartVoiceInterview={handleStartVoiceInterview}
+      />
+    );
+  }
+
+  if (currentView === 'voice-interview') {
+    return (
+      <VoiceInterview
+        onBack={() => setCurrentView('dashboard')}
+        onComplete={() => setCurrentView('dashboard')}
+        interviewConfig={interviewConfig}
+      />
+    );
   }
 
   return (

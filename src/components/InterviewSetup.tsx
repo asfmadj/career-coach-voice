@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +6,7 @@ import { useState } from "react";
 
 interface InterviewSetupProps {
   onBack: () => void;
-  onComplete: () => void;
+  onComplete: (config: { industry: string; level: string; type: string }) => void;
 }
 
 export const InterviewSetup = ({ onBack, onComplete }: InterviewSetupProps) => {
@@ -58,6 +57,14 @@ export const InterviewSetup = ({ onBack, onComplete }: InterviewSetupProps) => {
   ];
 
   const canProceed = selectedIndustry && selectedLevel && selectedType;
+
+  const handleComplete = () => {
+    onComplete({
+      industry: selectedIndustry,
+      level: selectedLevel,
+      type: selectedType
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -192,7 +199,7 @@ export const InterviewSetup = ({ onBack, onComplete }: InterviewSetupProps) => {
                   <Badge variant="secondary">{selectedType} Interview</Badge>
                 </div>
                 <Button 
-                  onClick={onComplete}
+                  onClick={handleComplete}
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                 >
                   Start Your AI Interview

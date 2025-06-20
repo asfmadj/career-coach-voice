@@ -1,15 +1,15 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Mic, Play, Clock, TrendingUp, Award, Calendar, BarChart3 } from "lucide-react";
+import { ArrowLeft, Mic, Play, Clock, TrendingUp, Award, Calendar, BarChart3, Phone } from "lucide-react";
 
 interface DashboardProps {
   onBack: () => void;
+  onStartVoiceInterview: () => void;
 }
 
-export const Dashboard = ({ onBack }: DashboardProps) => {
+export const Dashboard = ({ onBack, onStartVoiceInterview }: DashboardProps) => {
   const recentSessions = [
     {
       id: 1,
@@ -62,10 +62,22 @@ export const Dashboard = ({ onBack }: DashboardProps) => {
               <p className="text-gray-600">Track your progress and continue practicing</p>
             </div>
           </div>
-          <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-            <Mic className="h-4 w-4 mr-2" />
-            New Interview
-          </Button>
+          <div className="flex space-x-2">
+            <Button 
+              onClick={onStartVoiceInterview}
+              className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+            >
+              <Phone className="h-4 w-4 mr-2" />
+              Voice Interview
+            </Button>
+            <Button 
+              variant="outline"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0"
+            >
+              <Mic className="h-4 w-4 mr-2" />
+              Text Interview
+            </Button>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -146,6 +158,13 @@ export const Dashboard = ({ onBack }: DashboardProps) => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
+                <Button 
+                  onClick={onStartVoiceInterview}
+                  className="w-full justify-start bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  Start Voice Interview
+                </Button>
                 <Button className="w-full justify-start" variant="outline">
                   <Mic className="h-4 w-4 mr-2" />
                   Continue Previous Setup
