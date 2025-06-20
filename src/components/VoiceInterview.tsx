@@ -95,7 +95,7 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
         model: "gpt-3.5-turbo",
         messages: [
           {
-            role: "system",
+            role: "system" as const,
             content: `You are an experienced ${interviewConfig.industry} interviewer conducting a ${interviewConfig.type} interview for a ${interviewConfig.level} position. 
 
 Your role:
