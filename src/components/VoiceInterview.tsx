@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +26,7 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
 
   // Initialize Vapi
   useEffect(() => {
-    const vapiInstance = new Vapi("your-vapi-public-key"); // Replace with your actual Vapi public key
+    const vapiInstance = new Vapi("8a96f7dc-932d-4ed3-b067-d125fcc61afb");
     setVapi(vapiInstance);
 
     // Set up event listeners
