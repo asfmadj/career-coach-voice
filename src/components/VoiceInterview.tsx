@@ -91,8 +91,8 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
     const assistantConfig = {
       name: `${interviewConfig.type} Interview Assistant`,
       model: {
-        provider: "openai",
-        model: "gpt-3.5-turbo",
+        provider: "openai" as const,
+        model: "gpt-3.5-turbo" as const,
         messages: [
           {
             role: "system" as const,
@@ -114,7 +114,7 @@ Start with a warm greeting and introduction, then begin with your first question
         ]
       },
       voice: {
-        provider: "11labs",
+        provider: "11labs" as const,
         voiceId: "21m00Tcm4TlvDq8ikWAM" // Professional voice
       }
     };
