@@ -1,8 +1,14 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Mic, Play, Clock, TrendingUp, Award, Calendar, BarChart3, Phone } from "lucide-react";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { RandomPractice } from "@/components/RandomPractice";
+import { QuickSession } from "@/components/QuickSession";
+import { SessionReview } from "@/components/SessionReview";
 
 interface DashboardProps {
   onBack: () => void;
@@ -10,36 +16,76 @@ interface DashboardProps {
   onStartTextInterview: () => void;
   user: any;
   onProfile: () => void;
+  interviewConfig: {
+    industry: string;
+    level: string;
+    type: string;
+    duration: string;
+  };
 }
 
-export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview, user, onProfile }: DashboardProps) => {
+export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview, user, onProfile, interviewConfig }: DashboardProps) => {
+  const [currentView, setCurrentView] = useState<'dashboard' | 'random-practice' | 'quick-session' | 'session-review'>('dashboard');
+  const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
+  const { toast } = useToast();
+
   const recentSessions = [
     {
       id: 1,
       type: "Behavioral",
-      industry: "Software Engineering",
+      industry: interviewConfig.industry || "Software Engineering",
       date: "2024-01-15",
       score: 85,
       duration: "12 min",
-      feedback: "Great use of STAR method"
+      feedback: "Great use of STAR method. Your responses were well-structured and provided clear examples of your experience.",
+      questions: [
+        "Tell me about a time when you had to work with a difficult team member.",
+        "Describe a situation where you had to meet a tight deadline.",
+        "Give me an example of when you had to learn something new quickly."
+      ],
+      answers: [
+        "I once worked with a team member who was resistant to feedback...",
+        "During my last project, we had to deliver a feature in half the expected time...",
+        "When I started my current role, I had to learn React Native in two weeks..."
+      ]
     },
     {
       id: 2,
       type: "Technical",
-      industry: "Software Engineering",
+      industry: interviewConfig.industry || "Software Engineering",
       date: "2024-01-14",
       score: 78,
       duration: "18 min",
-      feedback: "Good problem-solving approach"
+      feedback: "Good problem-solving approach. Consider explaining your thought process more clearly and discussing time complexity.",
+      questions: [
+        "How would you implement a LRU cache?",
+        "Explain the difference between REST and GraphQL.",
+        "What are the benefits of using TypeScript?"
+      ],
+      answers: [
+        "I would use a combination of a hash map and doubly linked list...",
+        "REST is an architectural style while GraphQL is a query language...",
+        "TypeScript provides static type checking which helps catch errors..."
+      ]
     },
     {
       id: 3,
       type: "HR/Cultural",
-      industry: "Software Engineering",
+      industry: interviewConfig.industry || "Software Engineering",
       date: "2024-01-12",
       score: 92,
       duration: "8 min",
-      feedback: "Excellent cultural fit responses"
+      feedback: "Excellent cultural fit responses. You demonstrated strong alignment with company values and clear career goals.",
+      questions: [
+        "Why do you want to work here?",
+        "Where do you see yourself in 5 years?",
+        "What motivates you in your work?"
+      ],
+      answers: [
+        "I'm excited about your company's mission to democratize technology...",
+        "In 5 years, I see myself in a senior technical role...",
+        "I'm motivated by solving complex problems that have real impact..."
+      ]
     }
   ];
 
@@ -49,6 +95,48 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
     { label: "Hours Practiced", value: "12.5", icon: <Clock className="h-5 w-5" />, color: "purple" },
     { label: "Streak", value: "7 days", icon: <Award className="h-5 w-5" />, color: "orange" }
   ];
+
+  const handleRandomPractice = () => {
+    setCurrentView('random-practice');
+  };
+
+  const handleQuickSession = () => {
+    setCurrentView('quick-session');
+  };
+
+  const handleSessionReview = (sessionId: number) => {
+    setSelectedSessionId(sessionId);
+    setCurrentView('session-review');
+  };
+
+  const handleTechnicalPractice = () => {
+    toast({
+      title: "Technical Practice",
+      description: "Starting a focused technical interview session..."
+    });
+    onStartTextInterview();
+  };
+
+  const handleResponseStructure = () => {
+    toast({
+      title: "Response Structure Practice",
+      description: "Starting a session focused on STAR method and clear communication..."
+    });
+    onStartTextInterview();
+  };
+
+  if (currentView === 'random-practice') {
+    return <RandomPractice onBack={() => setCurrentView('dashboard')} interviewConfig={interviewConfig} />;
+  }
+
+  if (currentView === 'quick-session') {
+    return <QuickSession onBack={() => setCurrentView('dashboard')} interviewConfig={interviewConfig} />;
+  }
+
+  if (currentView === 'session-review' && selectedSessionId) {
+    const session = recentSessions.find(s => s.id === selectedSessionId);
+    return <SessionReview session={session} onBack={() => setCurrentView('dashboard')} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -138,7 +226,7 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
                         <Progress value={session.score} className="mb-3" />
                         <div className="flex items-center justify-between">
                           <p className="text-sm text-gray-600">{session.feedback}</p>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" onClick={() => handleSessionReview(session.id)}>
                             <Play className="h-4 w-4 mr-1" />
                             Review
                           </Button>
@@ -177,11 +265,19 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
                   <Mic className="h-4 w-4 mr-2" />
                   Start Text Interview
                 </Button>
-                <Button className="w-full justify-start" variant="outline">
+                <Button 
+                  onClick={handleRandomPractice}
+                  className="w-full justify-start" 
+                  variant="outline"
+                >
                   <BarChart3 className="h-4 w-4 mr-2" />
                   Random Practice Question
                 </Button>
-                <Button className="w-full justify-start" variant="outline">
+                <Button 
+                  onClick={handleQuickSession}
+                  className="w-full justify-start" 
+                  variant="outline"
+                >
                   <Clock className="h-4 w-4 mr-2" />
                   5-Minute Quick Session
                 </Button>
@@ -198,11 +294,11 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="p-3 bg-white rounded-lg border border-blue-200">
+                  <div className="p-3 bg-white rounded-lg border border-blue-200 cursor-pointer hover:shadow-md transition-shadow" onClick={handleTechnicalPractice}>
                     <p className="text-sm font-medium text-blue-800 mb-1">Practice Technical Questions</p>
                     <p className="text-xs text-blue-600">Your technical scores could improve with more practice</p>
                   </div>
-                  <div className="p-3 bg-white rounded-lg border border-blue-200">
+                  <div className="p-3 bg-white rounded-lg border border-blue-200 cursor-pointer hover:shadow-md transition-shadow" onClick={handleResponseStructure}>
                     <p className="text-sm font-medium text-blue-800 mb-1">Work on Response Structure</p>
                     <p className="text-xs text-blue-600">Focus on clear, organized answers using frameworks</p>
                   </div>

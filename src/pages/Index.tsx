@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,9 +10,10 @@ import { VoiceInterview } from "@/components/VoiceInterview";
 import { TextInterview } from "@/components/TextInterview";
 import { SignIn } from "@/components/SignIn";
 import { UserProfile } from "@/components/UserProfile";
+import { LearnMore } from "@/components/LearnMore";
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState<'landing' | 'setup' | 'dashboard' | 'voice-interview' | 'text-interview' | 'signin' | 'profile'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'setup' | 'dashboard' | 'voice-interview' | 'text-interview' | 'signin' | 'profile' | 'learn-more'>('landing');
   const [interviewConfig, setInterviewConfig] = useState({
     industry: '',
     level: '',
@@ -74,12 +76,30 @@ const Index = () => {
     setCurrentView('dashboard');
   };
 
+  const handleGetStarted = () => {
+    if (user) {
+      // User is logged in, go to dashboard or setup based on whether they have interview config
+      if (interviewConfig.industry) {
+        setCurrentView('dashboard');
+      } else {
+        setCurrentView('setup');
+      }
+    } else {
+      // User is not logged in, go to sign in first
+      setCurrentView('signin');
+    }
+  };
+
   if (currentView === 'signin') {
     return <SignIn onSignIn={handleSignIn} onBack={() => setCurrentView('landing')} />;
   }
 
   if (currentView === 'profile') {
     return <UserProfile user={user} onBack={() => setCurrentView('dashboard')} />;
+  }
+
+  if (currentView === 'learn-more') {
+    return <LearnMore onBack={() => setCurrentView('landing')} />;
   }
 
   if (currentView === 'setup') {
@@ -99,6 +119,7 @@ const Index = () => {
         onStartTextInterview={handleStartTextInterview}
         user={user}
         onProfile={() => setCurrentView('profile')}
+        interviewConfig={interviewConfig}
       />
     );
   }
@@ -147,7 +168,7 @@ const Index = () => {
             ) : (
               <>
                 <Button variant="ghost" onClick={() => setCurrentView('signin')}>Sign In</Button>
-                <Button onClick={() => setCurrentView('setup')}>Get Started</Button>
+                <Button onClick={handleGetStarted}>Get Started</Button>
               </>
             )}
           </div>
@@ -170,13 +191,13 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               size="lg" 
-              onClick={() => user ? setCurrentView('dashboard') : setCurrentView('signin')}
+              onClick={handleGetStarted}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
             >
               Start Practicing Now
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            <Button size="lg" variant="outline">
+            <Button size="lg" variant="outline" onClick={() => setCurrentView('learn-more')}>
               <BookOpen className="mr-2 h-5 w-5" />
               Learn More
             </Button>
