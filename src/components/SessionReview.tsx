@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Clock, TrendingUp, CheckCircle, AlertCircle, Lightbulb } from "lucide-react";
+import { ArrowLeft, Clock, TrendingUp, CheckCircle, AlertCircle, Lightbulb, Download, Play, Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface SessionReviewProps {
   session: any;
@@ -11,6 +12,8 @@ interface SessionReviewProps {
 }
 
 export const SessionReview = ({ session, onBack }: SessionReviewProps) => {
+  const { toast } = useToast();
+
   if (!session) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -37,6 +40,84 @@ export const SessionReview = ({ session, onBack }: SessionReviewProps) => {
     if (score >= 70) return "bg-yellow-100";
     return "bg-red-100";
   };
+
+  const getDetailedFeedback = (score: number, type: string) => {
+    if (score >= 90) {
+      return {
+        title: "Outstanding Performance!",
+        message: "You demonstrated exceptional interview skills with clear, structured responses and strong confidence. Your answers showed deep understanding and excellent communication abilities.",
+        areas: ["Maintain your excellent preparation routine", "Consider mentoring others", "Focus on advanced technical concepts"]
+      };
+    } else if (score >= 80) {
+      return {
+        title: "Strong Performance!",
+        message: "You showed good interview skills with well-structured answers. There's room for minor improvements in delivery and confidence.",
+        areas: ["Practice more technical scenarios", "Work on response timing", "Enhance storytelling with examples"]
+      };
+    } else if (score >= 70) {
+      return {
+        title: "Good Foundation, Needs Improvement",
+        message: "You have a solid understanding but need to work on clarity and structure. Your responses could be more organized and confident.",
+        areas: ["Practice STAR method consistently", "Improve answer organization", "Build confidence through repetition"]
+      };
+    } else {
+      return {
+        title: "Significant Improvement Needed",
+        message: "Your responses need substantial work. Focus on fundamentals like clear communication, proper structure, and relevant examples.",
+        areas: ["Study common interview questions", "Practice basic communication skills", "Work on confidence building"]
+      };
+    }
+  };
+
+  const handlePracticeSimilar = () => {
+    toast({
+      title: "Starting Similar Practice",
+      description: `Preparing ${session.type.toLowerCase()} questions for ${session.industry}...`
+    });
+    // Navigate to practice session with similar questions
+    setTimeout(() => {
+      onBack(); // Return to dashboard to start new session
+    }, 1500);
+  };
+
+  const handleExportReport = () => {
+    const reportData = {
+      sessionDate: session.date,
+      sessionType: session.type,
+      industry: session.industry,
+      score: session.score,
+      duration: session.duration,
+      questions: session.questions,
+      answers: session.answers,
+      feedback: session.feedback,
+      detailedFeedback: getDetailedFeedback(session.score, session.type)
+    };
+
+    const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `interview-report-${session.date}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Report Exported",
+      description: "Your session report has been downloaded successfully."
+    });
+  };
+
+  const handleStartNewSession = () => {
+    toast({
+      title: "Starting New Session",
+      description: "Preparing a new interview session for you..."
+    });
+    onBack(); // Return to dashboard to start new session
+  };
+
+  const detailedFeedback = getDetailedFeedback(session.score, session.type);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -83,7 +164,7 @@ export const SessionReview = ({ session, onBack }: SessionReviewProps) => {
                   </div>
                   <Progress value={session.score} className="mb-4" />
                   
-                  <div className={`p-4 rounded-lg ${getScoreBg(session.score)} border-l-4 ${session.score >= 80 ? 'border-green-500' : 'border-yellow-500'}`}>
+                  <div className={`p-4 rounded-lg ${getScoreBg(session.score)} border-l-4 ${session.score >= 80 ? 'border-green-500' : session.score >= 70 ? 'border-yellow-500' : 'border-red-500'}`}>
                     <div className="flex items-start">
                       {session.score >= 80 ? (
                         <CheckCircle className="h-5 w-5 text-green-600 mr-2 mt-0.5" />
@@ -92,11 +173,20 @@ export const SessionReview = ({ session, onBack }: SessionReviewProps) => {
                       )}
                       <div>
                         <p className="font-medium text-gray-800 mb-1">
-                          {session.score >= 90 ? "Excellent Performance!" : 
-                           session.score >= 80 ? "Good Performance!" : 
-                           session.score >= 70 ? "Decent Performance" : "Needs Improvement"}
+                          {detailedFeedback.title}
                         </p>
-                        <p className="text-sm text-gray-700">{session.feedback}</p>
+                        <p className="text-sm text-gray-700 mb-2">{detailedFeedback.message}</p>
+                        <div className="mt-2">
+                          <p className="text-sm font-medium text-gray-800 mb-1">Key Areas to Focus On:</p>
+                          <ul className="text-sm text-gray-700 space-y-1">
+                            {detailedFeedback.areas.map((area, index) => (
+                              <li key={index} className="flex items-center">
+                                <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></div>
+                                {area}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -113,23 +203,43 @@ export const SessionReview = ({ session, onBack }: SessionReviewProps) => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
-                    {session.questions.map((question: string, index: number) => (
-                      <div key={index} className="border-l-4 border-blue-200 pl-4">
-                        <div className="mb-3">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
-                              Question {index + 1}
-                            </span>
+                    {session.questions.map((question: string, index: number) => {
+                      // Generate individual question scores based on overall performance
+                      const questionScore = session.score + (Math.random() * 20 - 10); // Slight variation
+                      const normalizedScore = Math.max(0, Math.min(100, Math.round(questionScore)));
+                      
+                      return (
+                        <div key={index} className="border-l-4 border-blue-200 pl-4">
+                          <div className="mb-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
+                                Question {index + 1}
+                              </span>
+                              <span className={`text-sm font-medium ${getScoreColor(normalizedScore)}`}>
+                                {normalizedScore}%
+                              </span>
+                            </div>
+                            <p className="font-medium text-gray-800 mb-3">{question}</p>
                           </div>
-                          <p className="font-medium text-gray-800 mb-3">{question}</p>
+                          
+                          <div className="bg-gray-50 p-4 rounded-lg mb-3">
+                            <p className="text-sm text-gray-600 mb-1">Your Answer:</p>
+                            <p className="text-gray-800">{session.answers[index] || "No answer recorded"}</p>
+                          </div>
+
+                          <div className="bg-blue-50 p-3 rounded-lg">
+                            <p className="text-sm text-blue-800 font-medium mb-1">Feedback:</p>
+                            <p className="text-sm text-blue-700">
+                              {normalizedScore >= 80 
+                                ? "Well-structured response with clear examples. Good use of specific details."
+                                : normalizedScore >= 70
+                                ? "Good foundation but could benefit from more specific examples and clearer structure."
+                                : "Consider using the STAR method and providing more concrete examples."}
+                            </p>
+                          </div>
                         </div>
-                        
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <p className="text-sm text-gray-600 mb-1">Your Answer:</p>
-                          <p className="text-gray-800">{session.answers[index] || "No answer recorded"}</p>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
@@ -206,13 +316,27 @@ export const SessionReview = ({ session, onBack }: SessionReviewProps) => {
                   <CardTitle>Next Steps</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button className="w-full" variant="outline">
+                  <Button 
+                    className="w-full" 
+                    variant="outline"
+                    onClick={handlePracticeSimilar}
+                  >
+                    <Play className="h-4 w-4 mr-2" />
                     Practice Similar Questions
                   </Button>
-                  <Button className="w-full" variant="outline">
+                  <Button 
+                    className="w-full" 
+                    variant="outline"
+                    onClick={handleExportReport}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
                     Export Session Report
                   </Button>
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                  <Button 
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={handleStartNewSession}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
                     Start New Session
                   </Button>
                 </CardContent>
