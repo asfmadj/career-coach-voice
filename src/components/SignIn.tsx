@@ -18,27 +18,36 @@ export const SignIn = ({ onSignIn, onBack }: SignInProps) => {
     setIsLoading(true);
     
     try {
-      // Simulate Google Sign In - In production, you'd integrate with Google OAuth
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Check if Google Sign-In is available
+      if (typeof window !== 'undefined' && window.google) {
+        // Real Google Sign-In would go here
+        console.log("Google Sign-In API available");
+      }
       
+      // For now, simulate the sign-in process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Generate a more realistic mock user
       const mockUser = {
-        id: "1",
-        name: "John Doe",
-        email: "john.doe@example.com",
-        picture: "https://via.placeholder.com/150",
-        provider: "google"
+        id: `user_${Date.now()}`,
+        name: "Demo User",
+        email: "demo@neuroask.com",
+        picture: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`,
+        provider: "google",
+        joinedAt: new Date().toISOString()
       };
       
       toast({
         title: "Welcome to Neuro Ask!",
-        description: "You have successfully signed in with Google.",
+        description: `Successfully signed in as ${mockUser.name}`,
       });
       
       onSignIn(mockUser);
     } catch (error) {
+      console.error("Sign-in error:", error);
       toast({
         title: "Sign In Failed",
-        description: "Unable to sign in with Google. Please try again.",
+        description: "Unable to sign in at the moment. Please try again later.",
         variant: "destructive",
       });
     } finally {
@@ -92,6 +101,9 @@ export const SignIn = ({ onSignIn, onBack }: SignInProps) => {
               
               <div className="text-center text-sm text-gray-600">
                 <p>By signing in, you agree to our Terms of Service and Privacy Policy</p>
+                <p className="mt-2 text-xs text-blue-600">
+                  Note: This is a demo. In production, real Google OAuth would be integrated.
+                </p>
               </div>
             </CardContent>
           </Card>

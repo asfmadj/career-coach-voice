@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,52 +25,61 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
   const [conversationMessages, setConversationMessages] = useState<string[]>([]);
   const { toast } = useToast();
 
-  // Initialize Vapi
+  // Initialize Vapi with proper error handling
   useEffect(() => {
-    const vapiInstance = new Vapi("8a96f7dc-932d-4ed3-b067-d125fcc61afb");
-    setVapi(vapiInstance);
+    try {
+      const vapiInstance = new Vapi("8a96f7dc-932d-4ed3-b067-d125fcc61afb");
+      setVapi(vapiInstance);
 
-    // Set up event listeners
-    vapiInstance.on("call-start", () => {
-      console.log("Call started");
-      setIsCallActive(true);
-      toast({
-        title: "Interview Started",
-        description: "Your AI interview has begun. Good luck!",
+      // Set up event listeners
+      vapiInstance.on("call-start", () => {
+        console.log("Call started");
+        setIsCallActive(true);
+        toast({
+          title: "Interview Started",
+          description: "Your AI interview has begun. Good luck!",
+        });
       });
-    });
 
-    vapiInstance.on("call-end", () => {
-      console.log("Call ended");
-      setIsCallActive(false);
-      toast({
-        title: "Interview Completed",
-        description: "Your interview session has ended.",
+      vapiInstance.on("call-end", () => {
+        console.log("Call ended");
+        setIsCallActive(false);
+        toast({
+          title: "Interview Completed",
+          description: "Your interview session has ended.",
+        });
+        setTimeout(() => onComplete(), 2000);
       });
-      setTimeout(() => onComplete(), 2000);
-    });
 
-    vapiInstance.on("message", (message: any) => {
-      console.log("Message:", message);
-      if (message.type === "transcript") {
-        setConversationMessages(prev => [...prev, message.transcript]);
-      }
-    });
+      vapiInstance.on("message", (message: any) => {
+        console.log("Message:", message);
+        if (message.type === "transcript" && message.transcript) {
+          setConversationMessages(prev => [...prev, message.transcript]);
+        }
+      });
 
-    vapiInstance.on("error", (error: any) => {
-      console.error("Vapi error:", error);
+      vapiInstance.on("error", (error: any) => {
+        console.error("Vapi error:", error);
+        toast({
+          title: "Voice Interview Error",
+          description: "There was an issue with the voice system. Please try the text interview instead.",
+          variant: "destructive",
+        });
+      });
+
+      return () => {
+        if (vapiInstance) {
+          vapiInstance.stop();
+        }
+      };
+    } catch (error) {
+      console.error("Failed to initialize Vapi:", error);
       toast({
-        title: "Error",
-        description: "An error occurred during the interview. Please try again.",
+        title: "Voice System Unavailable",
+        description: "Please use the text interview option instead.",
         variant: "destructive",
       });
-    });
-
-    return () => {
-      if (vapiInstance) {
-        vapiInstance.stop();
-      }
-    };
+    }
   }, [onComplete, toast]);
 
   // Timer for call duration
@@ -84,14 +94,21 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
   }, [isCallActive]);
 
   const startInterview = async () => {
-    if (!vapi) return;
+    if (!vapi) {
+      toast({
+        title: "Voice System Not Ready",
+        description: "Please try the text interview option instead.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    // Create interview assistant configuration based on user's selections
+    // Enhanced assistant configuration
     const assistantConfig = {
       name: `${interviewConfig.type} Interview Assistant`,
       model: {
         provider: "openai" as const,
-        model: "gpt-3.5-turbo" as const,
+        model: "gpt-4" as const,
         messages: [
           {
             role: "system" as const,
@@ -99,50 +116,52 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
 
 Your role:
 - Ask relevant interview questions based on the industry and level
-- Listen carefully to responses and ask follow-up questions
-- Keep the conversation natural and professional
+- Listen carefully to responses and ask thoughtful follow-up questions
+- Keep the conversation natural, professional, and engaging
 - The interview should last about 10-15 minutes
+- Ask questions that test both technical skills and cultural fit
+- Provide encouraging feedback when appropriate
 - End the interview naturally when you feel you have enough information
 
 Industry: ${interviewConfig.industry}
 Level: ${interviewConfig.level}
 Type: ${interviewConfig.type}
 
-Start with a warm greeting and introduction, then begin with your first question.`
+Start with a warm greeting, introduce yourself, and begin with your first question. Keep responses concise and professional.`
           }
-        ]
+        ],
+        temperature: 0.7,
+        maxTokens: 250
       },
       voice: {
         provider: "11labs" as const,
-        voiceId: "21m00Tcm4TlvDq8ikWAM" // Professional voice
-      }
+        voiceId: "21m00Tcm4TlvDq8ikWAM"
+      },
+      firstMessage: `Hello! I'm your AI interviewer for today's ${interviewConfig.type} interview. I'm excited to learn more about you and your experience in ${interviewConfig.industry}. Let's start with a simple question: Can you tell me a bit about yourself and why you're interested in this ${interviewConfig.level} position?`
     };
 
     try {
+      console.log("Starting Vapi call with config:", assistantConfig);
       await vapi.start(assistantConfig);
     } catch (error) {
       console.error("Failed to start interview:", error);
       toast({
-        title: "Failed to Start",
-        description: "Could not start the interview. Please check your microphone permissions.",
+        title: "Failed to Start Voice Interview",
+        description: "Please check your microphone permissions and try again, or use the text interview option.",
         variant: "destructive",
       });
     }
   };
 
   const endInterview = () => {
-    if (vapi) {
+    if (vapi && isCallActive) {
       vapi.stop();
     }
   };
 
   const toggleMute = () => {
-    if (vapi) {
-      if (isMuted) {
-        vapi.setMuted(false);
-      } else {
-        vapi.setMuted(true);
-      }
+    if (vapi && isCallActive) {
+      vapi.setMuted(!isMuted);
       setIsMuted(!isMuted);
     }
   };
@@ -233,7 +252,7 @@ Start with a warm greeting and introduction, then begin with your first question
                       size="lg"
                     >
                       <Phone className="h-4 w-4 mr-2" />
-                      Start Interview
+                      Start Voice Interview
                     </Button>
                   ) : (
                     <>
@@ -255,6 +274,21 @@ Start with a warm greeting and introduction, then begin with your first question
                     </>
                   )}
                 </div>
+
+                {/* Alternative option */}
+                {!isCallActive && (
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-blue-700 mb-2">Having trouble with voice?</p>
+                    <Button 
+                      onClick={onBack}
+                      variant="outline" 
+                      size="sm"
+                      className="text-blue-600 border-blue-300"
+                    >
+                      Try Text Interview Instead
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

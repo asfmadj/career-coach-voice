@@ -86,11 +86,14 @@ Let's start with a simple question: Can you tell me a bit about yourself and why
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const messageToSend = currentMessage;
     setCurrentMessage("");
     setIsLoading(true);
 
     try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
+      console.log('Sending request to Gemini API...');
+      
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -103,14 +106,15 @@ Let's start with a simple question: Can you tell me a bit about yourself and why
 Context of the conversation so far:
 ${messages.map(msg => `${msg.sender}: ${msg.content}`).join('\n')}
 
-Latest candidate response: ${currentMessage}
+Latest candidate response: ${messageToSend}
 
 Respond as an interviewer would:
-- Ask relevant follow-up questions
+- Ask relevant follow-up questions based on their response
 - Provide encouraging feedback when appropriate
 - Keep the conversation professional and engaging
-- If this is getting long (15+ exchanges), start wrapping up the interview
 - Ask questions that test both technical skills and cultural fit
+- If this is getting long (10+ exchanges), start wrapping up the interview
+- Keep responses concise and focused
 
 Your response:`
             }]
@@ -124,12 +128,18 @@ Your response:`
         })
       });
 
+      console.log('Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error('Failed to get AI response');
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
+        throw new Error(`API Error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
       }
 
       const data = await response.json();
-      const aiResponse = data.candidates[0]?.content?.parts[0]?.text || "I'm sorry, I didn't catch that. Could you please repeat your answer?";
+      console.log('API Response:', data);
+      
+      const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I didn't catch that. Could you please repeat your answer?";
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -141,11 +151,11 @@ Your response:`
       setMessages(prev => [...prev, aiMessage]);
 
       // Check if interview should end
-      if (messages.length > 20) {
+      if (messages.length > 15) {
         setTimeout(() => {
           const endMessage: Message = {
             id: (Date.now() + 2).toString(),
-            content: "Thank you for taking the time to interview with us today. This concludes our interview session. You'll receive feedback shortly. Have a great day!",
+            content: "Thank you for taking the time to interview with us today. This concludes our interview session. You've done great! Have a wonderful day!",
             sender: 'ai',
             timestamp: new Date()
           };
@@ -165,7 +175,7 @@ Your response:`
       console.error('Error calling Gemini API:', error);
       toast({
         title: "Error",
-        description: "Failed to get AI response. Please try again.",
+        description: `Failed to get AI response: ${error.message}. Please try again.`,
         variant: "destructive",
       });
     } finally {
@@ -348,7 +358,7 @@ Your response:`
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </div>
         </div>
       </div>
     </div>
