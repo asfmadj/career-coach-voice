@@ -7,9 +7,12 @@ import { ArrowLeft, Mic, Play, Clock, TrendingUp, Award, Calendar, BarChart3, Ph
 interface DashboardProps {
   onBack: () => void;
   onStartVoiceInterview: () => void;
+  onStartTextInterview: () => void;
+  user: any;
+  onProfile: () => void;
 }
 
-export const Dashboard = ({ onBack, onStartVoiceInterview }: DashboardProps) => {
+export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview, user, onProfile }: DashboardProps) => {
   const recentSessions = [
     {
       id: 1,
@@ -71,6 +74,7 @@ export const Dashboard = ({ onBack, onStartVoiceInterview }: DashboardProps) => 
               Voice Interview
             </Button>
             <Button 
+              onClick={onStartTextInterview}
               variant="outline"
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0"
             >
@@ -165,9 +169,13 @@ export const Dashboard = ({ onBack, onStartVoiceInterview }: DashboardProps) => 
                   <Phone className="h-4 w-4 mr-2" />
                   Start Voice Interview
                 </Button>
-                <Button className="w-full justify-start" variant="outline">
+                <Button 
+                  onClick={onStartTextInterview}
+                  className="w-full justify-start" 
+                  variant="outline"
+                >
                   <Mic className="h-4 w-4 mr-2" />
-                  Continue Previous Setup
+                  Start Text Interview
                 </Button>
                 <Button className="w-full justify-start" variant="outline">
                   <BarChart3 className="h-4 w-4 mr-2" />
