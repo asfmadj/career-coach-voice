@@ -1,7 +1,6 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Brain, Mic, MessageSquare, BarChart3, Award, Clock, Users, CheckCircle, Star, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, Brain, Mic, MessageSquare, BarChart3, Award, Clock, Users, CheckCircle, Star, Zap } from "lucide-react";
 
 interface LearnMoreProps {
   onBack: () => void;
