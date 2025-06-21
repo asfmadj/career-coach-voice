@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Mail, Brain } from "lucide-react";
@@ -18,23 +17,24 @@ export const SignIn = ({ onSignIn, onBack }: SignInProps) => {
     setIsLoading(true);
     
     try {
-      // Check if Google Sign-In is available
-      if (typeof window !== 'undefined' && window.google) {
+      // Check if Google Sign-In is available (safer type checking)
+      if (typeof window !== 'undefined' && (window as any).google) {
         // Real Google Sign-In would go here
         console.log("Google Sign-In API available");
       }
       
-      // For now, simulate the sign-in process
+      // For now, simulate the sign-in process with more realistic flow
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Generate a more realistic mock user
+      // Generate a more realistic mock user with better demo experience
       const mockUser = {
         id: `user_${Date.now()}`,
-        name: "Demo User",
-        email: "demo@neuroask.com",
+        name: "Alex Johnson",
+        email: "alex.johnson@gmail.com",
         picture: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`,
         provider: "google",
-        joinedAt: new Date().toISOString()
+        joinedAt: new Date().toISOString(),
+        verified: true
       };
       
       toast({
