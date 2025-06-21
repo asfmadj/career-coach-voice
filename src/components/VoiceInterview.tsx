@@ -2,8 +2,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Mic, MicOff, Phone, PhoneOff, Volume2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { ArrowLeft, Mic, MicOff, Phone, PhoneOff, Volume2, AlertCircle } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import Vapi from "@vapi-ai/web";
 import { useToast } from "@/hooks/use-toast";
 
@@ -14,6 +14,7 @@ interface VoiceInterviewProps {
     industry: string;
     level: string;
     type: string;
+    duration: string;
   };
 }
 
@@ -23,63 +24,100 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
   const [isMuted, setIsMuted] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const [conversationMessages, setConversationMessages] = useState<string[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const { toast } = useToast();
+  const initializeAttempted = useRef(false);
 
-  // Initialize Vapi with proper error handling
+  // Initialize Vapi with improved error handling
   useEffect(() => {
-    try {
-      const vapiInstance = new Vapi("8a96f7dc-932d-4ed3-b067-d125fcc61afb");
-      setVapi(vapiInstance);
+    if (initializeAttempted.current) return;
+    initializeAttempted.current = true;
 
-      // Set up event listeners
-      vapiInstance.on("call-start", () => {
-        console.log("Call started");
-        setIsCallActive(true);
-        toast({
-          title: "Interview Started",
-          description: "Your AI interview has begun. Good luck!",
-        });
-      });
-
-      vapiInstance.on("call-end", () => {
-        console.log("Call ended");
-        setIsCallActive(false);
-        toast({
-          title: "Interview Completed",
-          description: "Your interview session has ended.",
-        });
-        setTimeout(() => onComplete(), 2000);
-      });
-
-      vapiInstance.on("message", (message: any) => {
-        console.log("Message:", message);
-        if (message.type === "transcript" && message.transcript) {
-          setConversationMessages(prev => [...prev, message.transcript]);
+    const initializeVapi = async () => {
+      try {
+        console.log("Initializing Vapi...");
+        
+        // Request microphone permission first
+        try {
+          await navigator.mediaDevices.getUserMedia({ audio: true });
+          console.log("Microphone permission granted");
+        } catch (micError) {
+          console.error("Microphone permission denied:", micError);
+          toast({
+            title: "Microphone Access Required",
+            description: "Please allow microphone access to use voice interviews.",
+            variant: "destructive",
+          });
+          setHasError(true);
+          return;
         }
-      });
 
-      vapiInstance.on("error", (error: any) => {
-        console.error("Vapi error:", error);
+        const vapiInstance = new Vapi("8a96f7dc-932d-4ed3-b067-d125fcc61afb");
+        setVapi(vapiInstance);
+        setIsInitialized(true);
+
+        // Set up event listeners with improved error handling
+        vapiInstance.on("call-start", () => {
+          console.log("Call started successfully");
+          setIsCallActive(true);
+          setHasError(false);
+          toast({
+            title: "Interview Started",
+            description: "Your AI interview has begun. Speak clearly!",
+          });
+        });
+
+        vapiInstance.on("call-end", () => {
+          console.log("Call ended");
+          setIsCallActive(false);
+          toast({
+            title: "Interview Completed",
+            description: "Your interview session has ended.",
+          });
+          setTimeout(() => onComplete(), 2000);
+        });
+
+        vapiInstance.on("message", (message: any) => {
+          console.log("Vapi message:", message);
+          if (message.type === "transcript" && message.transcript) {
+            setConversationMessages(prev => [...prev, `${message.role}: ${message.transcript}`]);
+          }
+        });
+
+        vapiInstance.on("error", (error: any) => {
+          console.error("Vapi error:", error);
+          setHasError(true);
+          setIsCallActive(false);
+          toast({
+            title: "Voice Interview Error",
+            description: "There was an issue with the voice system. Try restarting or use text interview.",
+            variant: "destructive",
+          });
+        });
+
+      } catch (error) {
+        console.error("Failed to initialize Vapi:", error);
+        setHasError(true);
         toast({
-          title: "Voice Interview Error",
-          description: "There was an issue with the voice system. Please try the text interview instead.",
+          title: "Voice System Unavailable",
+          description: "Voice interviews are currently unavailable. Please use the text interview option.",
           variant: "destructive",
         });
-      });
+      }
+    };
 
-      return () => {
-        if (vapiInstance) {
-          vapiInstance.stop();
+    initializeVapi();
+
+    return () => {
+      if (vapi) {
+        try {
+          vapi.stop();
+        } catch (error) {
+          console.error("Error stopping Vapi:", error);
         }
-      };
-    } catch (error) {
-      console.error("Failed to initialize Vapi:", error);
-      toast({
-        title: "Voice System Unavailable",
-        description: "Please use the text interview option instead.",
-        variant: "destructive",
-      });
-    }
+      }
+    };
   }, [onComplete, toast]);
 
   // Timer for call duration
@@ -89,21 +127,38 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
       interval = setInterval(() => {
         setCallDuration(prev => prev + 1);
       }, 1000);
+    } else {
+      setCallDuration(0);
     }
     return () => clearInterval(interval);
   }, [isCallActive]);
 
+  const getDurationInMinutes = () => {
+    return parseInt(interviewConfig.duration?.split(' ')[0] || '15');
+  };
+
   const startInterview = async () => {
-    if (!vapi) {
+    if (!vapi || !isInitialized) {
       toast({
         title: "Voice System Not Ready",
-        description: "Please try the text interview option instead.",
+        description: "Please wait for the system to initialize or use text interview.",
         variant: "destructive",
       });
       return;
     }
 
-    // Enhanced assistant configuration
+    if (hasError) {
+      toast({
+        title: "System Error",
+        description: "Please refresh the page or try the text interview option.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const durationMinutes = getDurationInMinutes();
+
+    // Enhanced assistant configuration with better prompts
     const assistantConfig = {
       name: `${interviewConfig.type} Interview Assistant`,
       model: {
@@ -112,57 +167,84 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
         messages: [
           {
             role: "system" as const,
-            content: `You are an experienced ${interviewConfig.industry} interviewer conducting a ${interviewConfig.type} interview for a ${interviewConfig.level} position. 
+            content: `You are an experienced ${interviewConfig.industry} interviewer conducting a ${interviewConfig.type} interview for a ${interviewConfig.level} position. The interview should last approximately ${durationMinutes} minutes.
 
 Your role:
-- Ask relevant interview questions based on the industry and level
+- Start with a warm, professional greeting
+- Ask relevant interview questions based on the industry (${interviewConfig.industry}) and level (${interviewConfig.level})
 - Listen carefully to responses and ask thoughtful follow-up questions
 - Keep the conversation natural, professional, and engaging
-- The interview should last about 10-15 minutes
+- Pace the interview to fit the ${durationMinutes}-minute timeframe
 - Ask questions that test both technical skills and cultural fit
 - Provide encouraging feedback when appropriate
-- End the interview naturally when you feel you have enough information
+- After ${durationMinutes-2} minutes, start wrapping up the interview gracefully
+- End with next steps and thank the candidate
 
-Industry: ${interviewConfig.industry}
-Level: ${interviewConfig.level}
-Type: ${interviewConfig.type}
+Guidelines:
+- Keep your responses concise but professional (under 50 words)
+- Ask one question at a time
+- Show interest in their responses
+- Maintain a supportive but professional tone
+- If they seem nervous, be encouraging
 
-Start with a warm greeting, introduce yourself, and begin with your first question. Keep responses concise and professional.`
+Start with: "Hello! Thank you for joining us today. I'm excited to learn more about you and your experience in ${interviewConfig.industry}. Let's begin with you telling me a bit about yourself and what interests you about this ${interviewConfig.level} position."`
           }
         ],
         temperature: 0.7,
-        maxTokens: 250
+        maxTokens: 150
       },
       voice: {
         provider: "11labs" as const,
-        voiceId: "21m00Tcm4TlvDq8ikWAM"
+        voiceId: "21m00Tcm4TlvDq8ikWAM",
+        stability: 0.8,
+        similarityBoost: 0.8
       },
-      firstMessage: `Hello! I'm your AI interviewer for today's ${interviewConfig.type} interview. I'm excited to learn more about you and your experience in ${interviewConfig.industry}. Let's start with a simple question: Can you tell me a bit about yourself and why you're interested in this ${interviewConfig.level} position?`
+      firstMessage: `Hello! Thank you for joining us today. I'm excited to learn more about you and your experience in ${interviewConfig.industry}. Let's begin - can you tell me a bit about yourself and what interests you about this ${interviewConfig.level} position?`,
+      transcriber: {
+        provider: "deepgram" as const,
+        model: "nova-2" as const,
+        language: "en-US"
+      }
     };
 
     try {
       console.log("Starting Vapi call with config:", assistantConfig);
+      setConversationMessages([]);
       await vapi.start(assistantConfig);
     } catch (error) {
       console.error("Failed to start interview:", error);
+      setHasError(true);
       toast({
         title: "Failed to Start Voice Interview",
-        description: "Please check your microphone permissions and try again, or use the text interview option.",
+        description: "Please check your microphone and internet connection, then try again.",
         variant: "destructive",
       });
     }
   };
 
-  const endInterview = () => {
+  const endInterview = async () => {
     if (vapi && isCallActive) {
-      vapi.stop();
+      try {
+        await vapi.stop();
+      } catch (error) {
+        console.error("Error ending interview:", error);
+        setIsCallActive(false);
+      }
     }
   };
 
-  const toggleMute = () => {
+  const toggleMute = async () => {
     if (vapi && isCallActive) {
-      vapi.setMuted(!isMuted);
-      setIsMuted(!isMuted);
+      try {
+        await vapi.setMuted(!isMuted);
+        setIsMuted(!isMuted);
+        toast({
+          title: isMuted ? "Unmuted" : "Muted",
+          description: isMuted ? "You can now speak" : "Your microphone is muted",
+        });
+      } catch (error) {
+        console.error("Error toggling mute:", error);
+      }
     }
   };
 
@@ -187,6 +269,11 @@ Start with a warm greeting, introduce yourself, and begin with your first questi
               <p className="text-gray-600">Practice your interview skills with our AI interviewer</p>
             </div>
           </div>
+          {isCallActive && (
+            <div className="text-lg font-mono text-blue-600">
+              {formatTime(callDuration)} / {interviewConfig.duration}
+            </div>
+          )}
         </div>
 
         <div className="max-w-4xl mx-auto">
@@ -201,9 +288,31 @@ Start with a warm greeting, introduce yourself, and begin with your first questi
                 <Badge variant="secondary">{interviewConfig.industry}</Badge>
                 <Badge variant="secondary">{interviewConfig.level}</Badge>
                 <Badge variant="secondary">{interviewConfig.type} Interview</Badge>
+                <Badge variant="secondary">{interviewConfig.duration}</Badge>
               </div>
             </CardContent>
           </Card>
+
+          {/* Error State */}
+          {hasError && (
+            <Card className="mb-8 border-red-200 bg-red-50">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2 text-red-700">
+                  <AlertCircle className="h-5 w-5" />
+                  <div>
+                    <h3 className="font-semibold">Voice Interview Unavailable</h3>
+                    <p className="text-sm">There's an issue with the voice system. Please try the text interview instead.</p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={onBack}
+                  className="mt-4 bg-red-600 hover:bg-red-700"
+                >
+                  Try Text Interview
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Voice Interview Interface */}
           <div className="grid lg:grid-cols-2 gap-8">
@@ -215,9 +324,11 @@ Start with a warm greeting, introduce yourself, and begin with your first questi
                   Voice Interview
                 </CardTitle>
                 <CardDescription>
-                  {isCallActive 
-                    ? "Interview in progress - speak naturally with the AI interviewer"
-                    : "Click start to begin your voice interview session"
+                  {!isInitialized 
+                    ? "Initializing voice system..."
+                    : isCallActive 
+                      ? "Interview in progress - speak naturally with the AI interviewer"
+                      : "Click start to begin your voice interview session"
                   }
                 </CardDescription>
               </CardHeader>
@@ -225,16 +336,18 @@ Start with a warm greeting, introduce yourself, and begin with your first questi
                 {/* Call Status */}
                 <div className="text-center py-8">
                   <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-4 ${
-                    isCallActive ? 'bg-green-100 animate-pulse' : 'bg-gray-100'
+                    isCallActive ? 'bg-green-100 animate-pulse' : hasError ? 'bg-red-100' : 'bg-gray-100'
                   }`}>
                     {isCallActive ? (
                       <Phone className="h-10 w-10 text-green-600" />
+                    ) : hasError ? (
+                      <AlertCircle className="h-10 w-10 text-red-500" />
                     ) : (
                       <PhoneOff className="h-10 w-10 text-gray-400" />
                     )}
                   </div>
                   <div className="text-lg font-semibold mb-2">
-                    {isCallActive ? 'Interview Active' : 'Ready to Start'}
+                    {!isInitialized ? 'Initializing...' : isCallActive ? 'Interview Active' : hasError ? 'System Error' : 'Ready to Start'}
                   </div>
                   {isCallActive && (
                     <div className="text-2xl font-mono text-blue-600">
@@ -245,16 +358,17 @@ Start with a warm greeting, introduce yourself, and begin with your first questi
 
                 {/* Controls */}
                 <div className="flex justify-center space-x-4">
-                  {!isCallActive ? (
+                  {!isCallActive && !hasError ? (
                     <Button 
                       onClick={startInterview}
+                      disabled={!isInitialized}
                       className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
                       size="lg"
                     >
                       <Phone className="h-4 w-4 mr-2" />
-                      Start Voice Interview
+                      {isInitialized ? 'Start Voice Interview' : 'Initializing...'}
                     </Button>
-                  ) : (
+                  ) : isCallActive ? (
                     <>
                       <Button
                         onClick={toggleMute}
@@ -272,13 +386,15 @@ Start with a warm greeting, introduce yourself, and begin with your first questi
                         End Interview
                       </Button>
                     </>
-                  )}
+                  ) : null}
                 </div>
 
                 {/* Alternative option */}
                 {!isCallActive && (
                   <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <p className="text-sm text-blue-700 mb-2">Having trouble with voice?</p>
+                    <p className="text-sm text-blue-700 mb-2">
+                      {hasError ? "Voice system unavailable?" : "Prefer typing?"}
+                    </p>
                     <Button 
                       onClick={onBack}
                       variant="outline" 
@@ -332,7 +448,7 @@ Start with a warm greeting, introduce yourself, and begin with your first questi
                 </div>
                 <div>
                   <p className="font-medium mb-1">⏱️ Timing</p>
-                  <p>Take your time to think before answering questions</p>
+                  <p>Your interview is set for {interviewConfig.duration} - pace yourself accordingly</p>
                 </div>
                 <div>
                   <p className="font-medium mb-1">🔄 Natural Flow</p>

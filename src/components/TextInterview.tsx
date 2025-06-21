@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +13,7 @@ interface TextInterviewProps {
     industry: string;
     level: string;
     type: string;
+    duration: string;
   };
 }
 
@@ -34,6 +34,10 @@ export const TextInterview = ({ onBack, onComplete, interviewConfig }: TextInter
   const { toast } = useToast();
 
   const GEMINI_API_KEY = "AIzaSyBwOdkC1Ko_01gCvYzyDXieKrdGHbG7VWA";
+
+  const getDurationInMinutes = () => {
+    return parseInt(interviewConfig.duration?.split(' ')[0] || '15');
+  };
 
   // Timer for interview duration
   useEffect(() => {
@@ -59,9 +63,10 @@ export const TextInterview = ({ onBack, onComplete, interviewConfig }: TextInter
 
   const startInterview = () => {
     setIsInterviewStarted(true);
+    const durationMinutes = getDurationInMinutes();
     const welcomeMessage: Message = {
       id: Date.now().toString(),
-      content: `Hello! I'm your AI interviewer for today's ${interviewConfig.type} interview in the ${interviewConfig.industry} field for a ${interviewConfig.level} position. 
+      content: `Hello! I'm your AI interviewer for today's ${interviewConfig.type} interview in the ${interviewConfig.industry} field for a ${interviewConfig.level} position. We have ${durationMinutes} minutes scheduled for this session.
 
 Let's start with a simple question: Can you tell me a bit about yourself and why you're interested in this role?`,
       sender: 'ai',
@@ -71,7 +76,7 @@ Let's start with a simple question: Can you tell me a bit about yourself and why
     
     toast({
       title: "Interview Started",
-      description: "Your text-based interview has begun. Good luck!",
+      description: `Your ${interviewConfig.duration} text interview has begun. Good luck!`,
     });
   };
 
@@ -92,6 +97,7 @@ Let's start with a simple question: Can you tell me a bit about yourself and why
 
     try {
       console.log('Sending request to Gemini API...');
+      const durationMinutes = getDurationInMinutes();
       
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
         method: 'POST',
@@ -101,7 +107,7 @@ Let's start with a simple question: Can you tell me a bit about yourself and why
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `You are an experienced ${interviewConfig.industry} interviewer conducting a ${interviewConfig.type} interview for a ${interviewConfig.level} position. 
+              text: `You are an experienced ${interviewConfig.industry} interviewer conducting a ${interviewConfig.type} interview for a ${interviewConfig.level} position. This is a ${interviewConfig.duration} interview session.
 
 Context of the conversation so far:
 ${messages.map(msg => `${msg.sender}: ${msg.content}`).join('\n')}
@@ -113,7 +119,8 @@ Respond as an interviewer would:
 - Provide encouraging feedback when appropriate
 - Keep the conversation professional and engaging
 - Ask questions that test both technical skills and cultural fit
-- If this is getting long (10+ exchanges), start wrapping up the interview
+- Pace the interview appropriately for a ${durationMinutes}-minute session
+- If this is getting long (${Math.floor(durationMinutes/2)}+ exchanges), start wrapping up the interview
 - Keep responses concise and focused
 
 Your response:`
@@ -150,8 +157,9 @@ Your response:`
 
       setMessages(prev => [...prev, aiMessage]);
 
-      // Check if interview should end
-      if (messages.length > 15) {
+      // Check if interview should end based on duration
+      const targetExchanges = Math.max(8, Math.floor(durationMinutes / 2));
+      if (messages.length > targetExchanges) {
         setTimeout(() => {
           const endMessage: Message = {
             id: (Date.now() + 2).toString(),
@@ -207,7 +215,7 @@ Your response:`
           </div>
           {isInterviewStarted && (
             <div className="text-lg font-mono text-blue-600">
-              {formatTime(interviewDuration)}
+              {formatTime(interviewDuration)} / {interviewConfig.duration}
             </div>
           )}
         </div>
@@ -224,6 +232,7 @@ Your response:`
                 <Badge variant="secondary">{interviewConfig.industry}</Badge>
                 <Badge variant="secondary">{interviewConfig.level}</Badge>
                 <Badge variant="secondary">{interviewConfig.type} Interview</Badge>
+                <Badge variant="secondary">{interviewConfig.duration}</Badge>
               </div>
             </CardContent>
           </Card>
@@ -237,7 +246,7 @@ Your response:`
               </CardTitle>
               <CardDescription>
                 {isInterviewStarted 
-                  ? "Interview in progress - type your responses below"
+                  ? `Interview in progress (${interviewConfig.duration}) - type your responses below`
                   : "Click start to begin your text-based interview session"
                 }
               </CardDescription>
@@ -345,8 +354,8 @@ Your response:`
                   <p>Write clear, concise responses that showcase your skills</p>
                 </div>
                 <div>
-                  <p className="font-medium mb-1">⏱️ Take Your Time</p>
-                  <p>Think before you type - there's no rush in text interviews</p>
+                  <p className="font-medium mb-1">⏱️ Time Management</p>
+                  <p>You have {interviewConfig.duration} - pace your responses accordingly</p>
                 </div>
                 <div>
                   <p className="font-medium mb-1">📝 Structure Your Answers</p>

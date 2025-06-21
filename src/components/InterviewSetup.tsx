@@ -1,18 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, User, Briefcase, MessageSquare, Code, BarChart3 } from "lucide-react";
+import { ArrowLeft, ArrowRight, User, Briefcase, MessageSquare, Code, BarChart3, Clock } from "lucide-react";
 import { useState } from "react";
 
 interface InterviewSetupProps {
   onBack: () => void;
-  onComplete: (config: { industry: string; level: string; type: string }) => void;
+  onComplete: (config: { industry: string; level: string; type: string; duration: string }) => void;
 }
 
 export const InterviewSetup = ({ onBack, onComplete }: InterviewSetupProps) => {
   const [selectedIndustry, setSelectedIndustry] = useState<string>("");
   const [selectedLevel, setSelectedLevel] = useState<string>("");
   const [selectedType, setSelectedType] = useState<string>("");
+  const [selectedDuration, setSelectedDuration] = useState<string>("");
 
   const industries = [
     { name: "Software Engineering", icon: "💻", description: "Technical coding and system design questions" },
@@ -56,13 +57,21 @@ export const InterviewSetup = ({ onBack, onComplete }: InterviewSetupProps) => {
     }
   ];
 
-  const canProceed = selectedIndustry && selectedLevel && selectedType;
+  const durations = [
+    { name: "15 minutes", description: "Quick practice session", color: "green" },
+    { name: "30 minutes", description: "Standard interview length", color: "blue" },
+    { name: "45 minutes", description: "Comprehensive practice", color: "purple" },
+    { name: "60 minutes", description: "Full interview simulation", color: "orange" }
+  ];
+
+  const canProceed = selectedIndustry && selectedLevel && selectedType && selectedDuration;
 
   const handleComplete = () => {
     onComplete({
       industry: selectedIndustry,
       level: selectedLevel,
-      type: selectedType
+      type: selectedType,
+      duration: selectedDuration
     });
   };
 
@@ -188,6 +197,41 @@ export const InterviewSetup = ({ onBack, onComplete }: InterviewSetupProps) => {
             </CardContent>
           </Card>
 
+          {/* Duration Selection */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Clock className="h-5 w-5 mr-2" />
+                Interview Duration
+              </CardTitle>
+              <CardDescription>
+                How long would you like your practice session to be?
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {durations.map((duration) => (
+                  <Card 
+                    key={duration.name}
+                    className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
+                      selectedDuration === duration.name 
+                        ? 'ring-2 ring-blue-500 bg-blue-50' 
+                        : 'hover:bg-gray-50'
+                    }`}
+                    onClick={() => setSelectedDuration(duration.name)}
+                  >
+                    <CardContent className="p-4 text-center">
+                      <Badge className={`mb-2 bg-${duration.color}-100 text-${duration.color}-800`}>
+                        {duration.name}
+                      </Badge>
+                      <p className="text-sm text-gray-600">{duration.description}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Summary and Start */}
           {canProceed && (
             <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
@@ -197,6 +241,7 @@ export const InterviewSetup = ({ onBack, onComplete }: InterviewSetupProps) => {
                   <Badge variant="secondary">{selectedIndustry}</Badge>
                   <Badge variant="secondary">{selectedLevel}</Badge>
                   <Badge variant="secondary">{selectedType} Interview</Badge>
+                  <Badge variant="secondary">{selectedDuration}</Badge>
                 </div>
                 <Button 
                   onClick={handleComplete}

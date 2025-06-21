@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +15,8 @@ const Index = () => {
   const [interviewConfig, setInterviewConfig] = useState({
     industry: '',
     level: '',
-    type: ''
+    type: '',
+    duration: ''
   });
   const [user, setUser] = useState<any>(null);
 
@@ -48,7 +48,7 @@ const Index = () => {
     "Sales", "Consulting", "Data Science", "Design", "Operations", "HR"
   ];
 
-  const handleInterviewComplete = (config: { industry: string; level: string; type: string }) => {
+  const handleInterviewComplete = (config: { industry: string; level: string; type: string; duration: string }) => {
     setInterviewConfig(config);
     setCurrentView('dashboard');
   };
