@@ -1,19 +1,24 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Mic, CheckCircle, BarChart3, Users, Zap, BookOpen } from "lucide-react";
+import { ArrowRight, Mic, CheckCircle, BarChart3, Users, Zap, BookOpen, Brain } from "lucide-react";
 import { useState } from "react";
 import { InterviewSetup } from "@/components/InterviewSetup";
 import { Dashboard } from "@/components/Dashboard";
 import { VoiceInterview } from "@/components/VoiceInterview";
+import { TextInterview } from "@/components/TextInterview";
+import { SignIn } from "@/components/SignIn";
+import { UserProfile } from "@/components/UserProfile";
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState<'landing' | 'setup' | 'dashboard' | 'voice-interview'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'setup' | 'dashboard' | 'voice-interview' | 'text-interview' | 'signin' | 'profile'>('landing');
   const [interviewConfig, setInterviewConfig] = useState({
     industry: '',
     level: '',
     type: ''
   });
+  const [user, setUser] = useState<any>(null);
 
   const features = [
     {
@@ -22,19 +27,19 @@ const Index = () => {
       description: "Practice with our intelligent AI interviewer that adapts to your responses and provides natural conversation flow."
     },
     {
+      icon: <Brain className="h-8 w-8 text-purple-600" />,
+      title: "Text-Based Interview",
+      description: "Chat with our AI interviewer through text messages for a comfortable interview experience."
+    },
+    {
       icon: <CheckCircle className="h-8 w-8 text-green-600" />,
       title: "Instant Feedback",
       description: "Get detailed feedback on your answers, including clarity, structure, and professional communication tips."
     },
     {
-      icon: <BarChart3 className="h-8 w-8 text-purple-600" />,
+      icon: <BarChart3 className="h-8 w-8 text-orange-600" />,
       title: "Progress Tracking",
       description: "Monitor your improvement over time with detailed analytics and performance insights."
-    },
-    {
-      icon: <Users className="h-8 w-8 text-orange-600" />,
-      title: "Industry-Specific",
-      description: "Tailored questions for your specific field, from tech to finance to healthcare and beyond."
     }
   ];
 
@@ -56,6 +61,27 @@ const Index = () => {
     }
   };
 
+  const handleStartTextInterview = () => {
+    if (!interviewConfig.industry) {
+      setCurrentView('setup');
+    } else {
+      setCurrentView('text-interview');
+    }
+  };
+
+  const handleSignIn = (userData: any) => {
+    setUser(userData);
+    setCurrentView('dashboard');
+  };
+
+  if (currentView === 'signin') {
+    return <SignIn onSignIn={handleSignIn} onBack={() => setCurrentView('landing')} />;
+  }
+
+  if (currentView === 'profile') {
+    return <UserProfile user={user} onBack={() => setCurrentView('dashboard')} />;
+  }
+
   if (currentView === 'setup') {
     return (
       <InterviewSetup 
@@ -70,6 +96,9 @@ const Index = () => {
       <Dashboard 
         onBack={() => setCurrentView('landing')} 
         onStartVoiceInterview={handleStartVoiceInterview}
+        onStartTextInterview={handleStartTextInterview}
+        user={user}
+        onProfile={() => setCurrentView('profile')}
       />
     );
   }
@@ -84,6 +113,16 @@ const Index = () => {
     );
   }
 
+  if (currentView === 'text-interview') {
+    return (
+      <TextInterview
+        onBack={() => setCurrentView('dashboard')}
+        onComplete={() => setCurrentView('dashboard')}
+        interviewConfig={interviewConfig}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
@@ -91,15 +130,26 @@ const Index = () => {
         <nav className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <Mic className="h-5 w-5 text-white" />
+              <Brain className="h-5 w-5 text-white" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              InterviewAI
+              Neuro Ask
             </span>
           </div>
           <div className="flex items-center space-x-4">
-            <Button variant="ghost">Sign In</Button>
-            <Button onClick={() => setCurrentView('setup')}>Get Started</Button>
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <Button variant="ghost" onClick={() => setCurrentView('profile')}>
+                  {user.name || user.email}
+                </Button>
+                <Button onClick={() => setCurrentView('dashboard')}>Dashboard</Button>
+              </div>
+            ) : (
+              <>
+                <Button variant="ghost" onClick={() => setCurrentView('signin')}>Sign In</Button>
+                <Button onClick={() => setCurrentView('setup')}>Get Started</Button>
+              </>
+            )}
           </div>
         </nav>
       </header>
@@ -112,7 +162,7 @@ const Index = () => {
             AI-Powered Interview Practice
           </Badge>
           <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
-            Master Your Next Interview with AI
+            Master Your Next Interview with Neuro Ask
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
             Practice with our intelligent AI interviewer, get instant feedback, and boost your confidence with personalized interview preparation.
@@ -120,7 +170,7 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               size="lg" 
-              onClick={() => setCurrentView('setup')}
+              onClick={() => user ? setCurrentView('dashboard') : setCurrentView('signin')}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
             >
               Start Practicing Now
@@ -137,7 +187,7 @@ const Index = () => {
       {/* Features Section */}
       <section className="container mx-auto px-6 py-20">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose InterviewAI?</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose Neuro Ask?</h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Our AI-powered platform provides everything you need to excel in your next interview
           </p>
@@ -189,11 +239,11 @@ const Index = () => {
             Ready to Ace Your Interview?
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Join thousands of professionals who have improved their interview skills with InterviewAI
+            Join thousands of professionals who have improved their interview skills with Neuro Ask
           </p>
           <Button 
             size="lg" 
-            onClick={() => setCurrentView('setup')}
+            onClick={() => user ? setCurrentView('dashboard') : setCurrentView('signin')}
             className="bg-white text-blue-600 hover:bg-gray-100"
           >
             Get Started for Free
@@ -207,10 +257,10 @@ const Index = () => {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-2 mb-4 md:mb-0">
             <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded"></div>
-            <span className="font-semibold text-gray-800">InterviewAI</span>
+            <span className="font-semibold text-gray-800">Neuro Ask</span>
           </div>
           <p className="text-gray-600 text-sm">
-            © 2024 InterviewAI. Empowering careers through AI-powered practice.
+            © 2024 Neuro Ask. Empowering careers through AI-powered practice.
           </p>
         </div>
       </footer>
