@@ -203,7 +203,7 @@ Start with: "Hello! Thank you for joining us today. I'm excited to learn more ab
       transcriber: {
         provider: "deepgram" as const,
         model: "nova-2" as const,
-        language: "en-US"
+        language: "en-US" as const
       }
     };
 
