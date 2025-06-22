@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Mic, MicOff, Phone, PhoneOff, Volume2, AlertCircle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, Mic, MicOff, Phone, PhoneOff, Volume2, AlertCircle, Globe } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import Vapi from "@vapi-ai/web";
 import { useToast } from "@/hooks/use-toast";
@@ -25,8 +26,14 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
   const [conversationMessages, setConversationMessages] = useState<string[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState("en");
   const { toast } = useToast();
   const initializeAttempted = useRef(false);
+
+  const languages = [
+    { code: "en", name: "English", locale: "en-US" },
+    { code: "hi", name: "हिंदी (Hindi)", locale: "hi-IN" }
+  ];
 
   // Initialize Vapi with improved error handling
   useEffect(() => {
@@ -204,8 +211,9 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
     }
 
     const durationMinutes = getDurationInMinutes();
+    const currentLanguage = languages.find(lang => lang.code === selectedLanguage);
 
-    // Enhanced assistant configuration with better prompts
+    // Enhanced assistant configuration with language support
     const assistantConfig = {
       name: `${interviewConfig.type} Interview Assistant`,
       model: {
@@ -214,7 +222,29 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
         messages: [
           {
             role: "system" as const,
-            content: `You are an experienced ${interviewConfig.industry} interviewer conducting a ${interviewConfig.type} interview for a ${interviewConfig.level} position. The interview should last approximately ${durationMinutes} minutes.
+            content: selectedLanguage === "hi" 
+              ? `आप एक अनुभवी ${interviewConfig.industry} साक्षात्कारकर्ता हैं जो ${interviewConfig.level} पद के लिए ${interviewConfig.type} साक्षात्कार ले रहे हैं। साक्षात्कार लगभग ${durationMinutes} मिनट का होना चाहिए।
+
+आपकी भूमिका:
+- एक गर्मजोशी भरे, पेशेवर अभिवादन के साथ शुरुआत करें
+- उद्योग (${interviewConfig.industry}) और स्तर (${interviewConfig.level}) के आधार पर प्रासंगिक साक्षात्कार प्रश्न पूछें
+- उत्तरों को ध्यान से सुनें और विचारशील फॉलो-अप प्रश्न पूछें
+- बातचीत को प्राकृतिक, पेशेवर और आकर्षक रखें
+- साक्षात्कार को ${durationMinutes}-मिनट की समय सीमा में फिट करने के लिए गति निर्धारित करें
+- तकनीकी कौशल और सांस्कृतिक फिट दोनों का परीक्षण करने वाले प्रश्न पूछें
+
+महत्वपूर्ण समय:
+- ${Math.max(durationMinutes-2, 1)} मिनट के बाद, साक्षात्कार को समाप्त करना शुरू करें
+- अंत में कहें "आज आपका समय देने के लिए धन्यवाद। यह हमारा साक्षात्कार समाप्त होता है।"
+
+दिशानिर्देश:
+- अपने उत्तर संक्षिप्त लेकिन पेशेवर रखें (50 शब्दों के तहत)
+- एक समय में एक प्रश्न पूछें
+- उनके उत्तरों में रुचि दिखाएं
+- एक सहायक लेकिन पेशेवर स्वर बनाए रखें
+
+शुरुआत इसके साथ करें: "नमस्ते! आज हमारे साथ जुड़ने के लिए धन्यवाद। मैं ${interviewConfig.industry} में आपके बारे में और आपके अनुभव के बारे में जानने के लिए उत्साहित हूं। आइए शुरुआत करते हैं।"`
+              : `You are an experienced ${interviewConfig.industry} interviewer conducting a ${interviewConfig.type} interview for a ${interviewConfig.level} position. The interview should last approximately ${durationMinutes} minutes.
 
 Your role:
 - Start with a warm, professional greeting
@@ -244,15 +274,17 @@ Start with: "Hello! Thank you for joining us today. I'm excited to learn more ab
       },
       voice: {
         provider: "11labs" as const,
-        voiceId: "21m00Tcm4TlvDq8ikWAM",
+        voiceId: selectedLanguage === "hi" ? "pFZP5JQG7iQjIQuC4Bku" : "21m00Tcm4TlvDq8ikWAM",
         stability: 0.8,
         similarityBoost: 0.8
       },
-      firstMessage: `Hello! Thank you for joining us today. I'm excited to learn more about you and your experience in ${interviewConfig.industry}. Let's begin - can you tell me a bit about yourself and what interests you about this ${interviewConfig.level} position?`,
+      firstMessage: selectedLanguage === "hi" 
+        ? `नमस्ते! आज हमारे साथ जुड़ने के लिए धन्यवाद। मैं ${interviewConfig.industry} में आपके बारे में और आपके अनुभव के बारे में जानने के लिए उत्साहित हूं। आइए शुरुआत करते हैं - क्या आप अपने बारे में थोड़ा बता सकते हैं?`
+        : `Hello! Thank you for joining us today. I'm excited to learn more about you and your experience in ${interviewConfig.industry}. Let's begin - can you tell me a bit about yourself and what interests you about this ${interviewConfig.level} position?`,
       transcriber: {
         provider: "deepgram" as const,
         model: "nova-2" as const,
-        language: "en-US" as const
+        language: currentLanguage?.locale || "en-US"
       }
     };
 
@@ -304,7 +336,7 @@ Start with: "Hello! Thank you for joining us today. I'm excited to learn more ab
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50">
       <div className="container mx-auto px-6 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -315,11 +347,11 @@ Start with: "Hello! Thank you for joining us today. I'm excited to learn more ab
             </Button>
             <div>
               <h1 className="text-2xl font-bold">AI Voice Interview</h1>
-              <p className="text-gray-600">Practice your interview skills with our AI interviewer</p>
+              <p className="text-muted-foreground">Practice your interview skills with our AI interviewer</p>
             </div>
           </div>
           {isCallActive && (
-            <div className="text-lg font-mono text-blue-600">
+            <div className="text-lg font-mono text-primary">
               {formatTime(callDuration)} / {interviewConfig.duration}
             </div>
           )}
@@ -333,20 +365,38 @@ Start with: "Hello! Thank you for joining us today. I'm excited to learn more ab
               <CardDescription>Your personalized interview setup</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 mb-4">
                 <Badge variant="secondary">{interviewConfig.industry}</Badge>
                 <Badge variant="secondary">{interviewConfig.level}</Badge>
                 <Badge variant="secondary">{interviewConfig.type} Interview</Badge>
                 <Badge variant="secondary">{interviewConfig.duration}</Badge>
+              </div>
+              
+              {/* Language Selector */}
+              <div className="flex items-center space-x-2">
+                <Globe className="h-4 w-4 text-muted-foreground" />
+                <label className="text-sm font-medium">Interview Language:</label>
+                <Select value={selectedLanguage} onValueChange={setSelectedLanguage} disabled={isCallActive}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {languages.map((lang) => (
+                      <SelectItem key={lang.code} value={lang.code}>
+                        {lang.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>
 
           {/* Error State */}
           {hasError && (
-            <Card className="mb-8 border-red-200 bg-red-50">
+            <Card className="mb-8 border-destructive/20 bg-destructive/5">
               <CardContent className="p-6">
-                <div className="flex items-center space-x-2 text-red-700">
+                <div className="flex items-center space-x-2 text-destructive">
                   <AlertCircle className="h-5 w-5" />
                   <div>
                     <h3 className="font-semibold">Voice Interview Unavailable</h3>
@@ -355,7 +405,7 @@ Start with: "Hello! Thank you for joining us today. I'm excited to learn more ab
                 </div>
                 <Button 
                   onClick={onBack}
-                  className="mt-4 bg-red-600 hover:bg-red-700"
+                  className="mt-4 bg-destructive hover:bg-destructive/90"
                 >
                   Try Text Interview
                 </Button>
@@ -385,21 +435,21 @@ Start with: "Hello! Thank you for joining us today. I'm excited to learn more ab
                 {/* Call Status */}
                 <div className="text-center py-8">
                   <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-4 ${
-                    isCallActive ? 'bg-green-100 animate-pulse' : hasError ? 'bg-red-100' : 'bg-gray-100'
+                    isCallActive ? 'bg-primary/10 animate-pulse' : hasError ? 'bg-destructive/10' : 'bg-muted'
                   }`}>
                     {isCallActive ? (
-                      <Phone className="h-10 w-10 text-green-600" />
+                      <Phone className="h-10 w-10 text-primary" />
                     ) : hasError ? (
-                      <AlertCircle className="h-10 w-10 text-red-500" />
+                      <AlertCircle className="h-10 w-10 text-destructive" />
                     ) : (
-                      <PhoneOff className="h-10 w-10 text-gray-400" />
+                      <PhoneOff className="h-10 w-10 text-muted-foreground" />
                     )}
                   </div>
                   <div className="text-lg font-semibold mb-2">
                     {!isInitialized ? 'Initializing...' : isCallActive ? 'Interview Active' : hasError ? 'System Error' : 'Ready to Start'}
                   </div>
                   {isCallActive && (
-                    <div className="text-2xl font-mono text-blue-600">
+                    <div className="text-2xl font-mono text-primary">
                       {formatTime(callDuration)}
                     </div>
                   )}
@@ -411,7 +461,7 @@ Start with: "Hello! Thank you for joining us today. I'm excited to learn more ab
                     <Button 
                       onClick={startInterview}
                       disabled={!isInitialized}
-                      className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                      className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
                       size="lg"
                     >
                       <Phone className="h-4 w-4 mr-2" />
@@ -440,15 +490,15 @@ Start with: "Hello! Thank you for joining us today. I'm excited to learn more ab
 
                 {/* Alternative option */}
                 {!isCallActive && (
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <p className="text-sm text-blue-700 mb-2">
+                  <div className="text-center p-4 bg-primary/5 rounded-lg">
+                    <p className="text-sm text-primary/70 mb-2">
                       {hasError ? "Voice system unavailable?" : "Prefer typing?"}
                     </p>
                     <Button 
                       onClick={onBack}
                       variant="outline" 
                       size="sm"
-                      className="text-blue-600 border-blue-300"
+                      className="text-primary border-primary/30"
                     >
                       Try Text Interview Instead
                     </Button>
@@ -464,15 +514,15 @@ Start with: "Hello! Thank you for joining us today. I'm excited to learn more ab
                 <CardDescription>Real-time transcript of your interview</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-64 overflow-y-auto bg-gray-50 rounded-lg p-4 space-y-2">
+                <div className="h-64 overflow-y-auto bg-muted/50 rounded-lg p-4 space-y-2">
                   {conversationMessages.length === 0 ? (
-                    <div className="text-center text-gray-500 py-8">
+                    <div className="text-center text-muted-foreground py-8">
                       <Mic className="h-8 w-8 mx-auto mb-2 opacity-50" />
                       <p>Conversation will appear here once started</p>
                     </div>
                   ) : (
                     conversationMessages.map((message, index) => (
-                      <div key={index} className="bg-white p-2 rounded border text-sm">
+                      <div key={index} className="bg-background p-2 rounded border text-sm">
                         {message}
                       </div>
                     ))
@@ -483,10 +533,10 @@ Start with: "Hello! Thank you for joining us today. I'm excited to learn more ab
           </div>
 
           {/* Instructions */}
-          <Card className="mt-8 bg-blue-50 border-blue-200">
+          <Card className="mt-8 bg-primary/5 border-primary/20">
             <CardContent className="p-6">
-              <h3 className="font-semibold mb-3 text-blue-800">Interview Tips</h3>
-              <div className="grid md:grid-cols-2 gap-4 text-sm text-blue-700">
+              <h3 className="font-semibold mb-3 text-primary">Interview Tips</h3>
+              <div className="grid md:grid-cols-2 gap-4 text-sm text-primary/70">
                 <div>
                   <p className="font-medium mb-1">🎤 Audio Quality</p>
                   <p>Ensure you're in a quiet environment with a good microphone</p>

@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, CheckCircle, ArrowRight, Mic, MessageSquare, Phone, PhoneOff, Brain, TrendingUp } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, Clock, CheckCircle, ArrowRight, Mic, MessageSquare, Phone, PhoneOff, Brain, TrendingUp, Globe } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import Vapi from "@vapi-ai/web";
@@ -30,6 +31,7 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
   const [showStats, setShowStats] = useState(false);
   const [sessionStats, setSessionStats] = useState<any>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState("en");
   
   // Voice-specific state
   const [vapi, setVapi] = useState<Vapi | null>(null);
@@ -40,11 +42,24 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
   
   const { toast } = useToast();
 
+  const languages = [
+    { code: "en", name: "English", locale: "en-US" },
+    { code: "hi", name: "हिंदी (Hindi)", locale: "hi-IN" }
+  ];
+
   const questions = [
     "Tell me about yourself and your background.",
     "Why are you interested in this position?",
     "What's your greatest professional strength?"
   ];
+
+  const questionsHindi = [
+    "अपने बारे में और अपनी पृष्ठभूमि के बारे में बताएं।",
+    "आप इस पद में क्यों रुचि रखते हैं?",
+    "आपकी सबसे बड़ी व्यावसायिक शक्ति क्या है?"
+  ];
+
+  const currentQuestions = selectedLanguage === "hi" ? questionsHindi : questions;
 
   // Initialize Vapi for voice sessions
   useEffect(() => {
@@ -83,9 +98,17 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
               // AI spoke - check if it's moving to next question or ending
               const transcript = message.transcript.toLowerCase();
               
-              // Check if AI is ending the interview
-              if (transcript.includes("thank you") && transcript.includes("interview") && 
-                  (transcript.includes("complete") || transcript.includes("end") || transcript.includes("conclude"))) {
+              // Check if AI is ending the interview (multiple language support)
+              const endKeywords = [
+                "thank you", "interview", "complete", "end", "conclude",
+                "धन्यवाद", "साक्षात्कार", "समाप्त", "पूरा"
+              ];
+              const isEnding = endKeywords.some(keyword => transcript.includes(keyword)) &&
+                               (transcript.includes("complete") || transcript.includes("end") || 
+                                transcript.includes("conclude") || transcript.includes("समाप्त") || 
+                                transcript.includes("पूरा"));
+              
+              if (isEnding) {
                 console.log("AI is ending the interview");
                 setTimeout(() => {
                   if (vapi && isCallActive) {
@@ -94,11 +117,14 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
                 }, 2000);
               }
               
-              // Check if AI is asking the next question
-              const questionKeywords = ["second question", "next question", "final question", "last question"];
+              // Check if AI is asking the next question (multiple language support)
+              const questionKeywords = [
+                "second question", "next question", "final question", "last question",
+                "दूसरा प्रश्न", "अगला प्रश्न", "अंतिम प्रश्न", "आखिरी प्रश्न"
+              ];
               const isNextQuestion = questionKeywords.some(keyword => transcript.includes(keyword));
               
-              if (isNextQuestion && currentQuestionIndex < questions.length - 1) {
+              if (isNextQuestion && currentQuestionIndex < currentQuestions.length - 1) {
                 setCurrentQuestionIndex(prev => prev + 1);
               }
             }
@@ -195,6 +221,8 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
     }
 
     try {
+      const currentLanguage = languages.find(lang => lang.code === selectedLanguage);
+      
       const assistantConfig = {
         name: "Quick Interview Assistant",
         model: {
@@ -203,20 +231,35 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
           messages: [
             {
               role: "system" as const,
-              content: `You are conducting a quick 5-minute interview for ${interviewConfig.industry}. You must ask these 3 questions in order:
+              content: selectedLanguage === "hi" 
+                ? `आप ${interviewConfig.industry} के लिए एक त्वरित 5-मिनट का साक्षात्कार ले रहे हैं। आपको इन 3 प्रश्नों को क्रम में पूछना होगा:
 
-              1. "Tell me about yourself and your background."
-              2. "Why are you interested in this position?"  
-              3. "What's your greatest professional strength?"
+                1. "अपने बारे में और अपनी पृष्ठभूमि के बारे में बताएं।"
+                2. "आप इस पद में क्यों रुचि रखते हैं?"
+                3. "आपकी सबसे बड़ी व्यावसायिक शक्ति क्या है?"
 
-              IMPORTANT INSTRUCTIONS:
-              - Ask ONE question at a time
-              - Wait for the user's complete response before moving to the next question
-              - After each answer, acknowledge briefly and then say "Moving to the [second/final] question:"
-              - After the third question is answered, say "Thank you for completing this interview. This concludes our session."
-              - Keep your responses brief (under 30 words)
-              - Do not ask follow-up questions - stick to the 3 main questions only
-              - The entire interview should take about 5 minutes`
+                महत्वपूर्ण निर्देश:
+                - एक समय में केवल एक प्रश्न पूछें
+                - अगले प्रश्न पर जाने से पहले उपयोगकर्ता के पूरे उत्तर की प्रतीक्षा करें
+                - प्रत्येक उत्तर के बाद, संक्षेप में स्वीकार करें और फिर कहें "अगले प्रश्न पर जाते हैं:"
+                - तीसरे प्रश्न का उत्तर देने के बाद, कहें "इस साक्षात्कार को पूरा करने के लिए धन्यवाद। यह हमारा सत्र समाप्त होता है।"
+                - अपने उत्तर संक्षिप्त रखें (30 शब्दों के तहत)
+                - फॉलो-अप प्रश्न न पूछें - केवल 3 मुख्य प्रश्नों पर टिके रहें
+                - पूरा साक्षात्कार लगभग 5 मिनट का होना चाहिए`
+                : `You are conducting a quick 5-minute interview for ${interviewConfig.industry}. You must ask these 3 questions in order:
+
+                1. "Tell me about yourself and your background."
+                2. "Why are you interested in this position?"  
+                3. "What's your greatest professional strength?"
+
+                IMPORTANT INSTRUCTIONS:
+                - Ask ONE question at a time
+                - Wait for the user's complete response before moving to the next question
+                - After each answer, acknowledge briefly and then say "Moving to the [second/final] question:"
+                - After the third question is answered, say "Thank you for completing this interview. This concludes our session."
+                - Keep your responses brief (under 30 words)
+                - Do not ask follow-up questions - stick to the 3 main questions only
+                - The entire interview should take about 5 minutes`
             }
           ],
           temperature: 0.7,
@@ -224,13 +267,15 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
         },
         voice: {
           provider: "11labs" as const,
-          voiceId: "21m00Tcm4TlvDq8ikWAM"
+          voiceId: selectedLanguage === "hi" ? "pFZP5JQG7iQjIQuC4Bku" : "21m00Tcm4TlvDq8ikWAM"
         },
-        firstMessage: "Hello! Welcome to your 5-minute quick interview. Let's start with the first question: Tell me about yourself and your background.",
+        firstMessage: selectedLanguage === "hi" 
+          ? "नमस्ते! आपके 5-मिनट के त्वरित साक्षात्कार में आपका स्वागत है। आइए पहले प्रश्न से शुरुआत करते हैं: अपने बारे में और अपनी पृष्ठभूमि के बारे में बताएं।"
+          : "Hello! Welcome to your 5-minute quick interview. Let's start with the first question: Tell me about yourself and your background.",
         transcriber: {
           provider: "deepgram" as const,
           model: "nova-2" as const,
-          language: "en-US" as const
+          language: currentLanguage?.locale || "en-US"
         }
       };
 
@@ -255,7 +300,7 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
       setAnswers(newAnswers);
       setCurrentAnswer("");
 
-      if (currentQuestionIndex < questions.length - 1) {
+      if (currentQuestionIndex < currentQuestions.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
       } else {
         completeSession();
@@ -342,23 +387,23 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
 
   if (showStats && sessionStats) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50">
         <div className="container mx-auto px-6 py-8">
           <div className="max-w-4xl mx-auto">
             <Card className="shadow-xl border-0">
-              <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-t-lg">
+              <CardHeader className="bg-gradient-to-r from-primary to-accent text-white rounded-t-lg">
                 <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Brain className="h-8 w-8 text-white" />
                 </div>
                 <CardTitle className="text-2xl text-center">Quick Session Analysis</CardTitle>
-                <CardDescription className="text-blue-100 text-center">
+                <CardDescription className="text-primary-100 text-center">
                   AI-powered performance insights from your {sessionType} interview
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-8 space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
-                    <h3 className="font-semibold mb-4 text-blue-800 flex items-center">
+                  <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-6 rounded-xl border border-primary/20">
+                    <h3 className="font-semibold mb-4 text-primary flex items-center">
                       <TrendingUp className="h-5 w-5 mr-2" />
                       Performance Score
                     </h3>
@@ -372,14 +417,14 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
                     <div className="grid grid-cols-2 gap-3 mt-4">
                       <div>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-slate-600">Communication</span>
+                          <span className="text-muted-foreground">Communication</span>
                           <span className="font-bold">{sessionStats.skillBreakdown.communication}%</span>
                         </div>
                         <Progress value={sessionStats.skillBreakdown.communication} className="h-2" />
                       </div>
                       <div>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-slate-600">Technical</span>
+                          <span className="text-muted-foreground">Technical</span>
                           <span className="font-bold">{sessionStats.skillBreakdown.technical}%</span>
                         </div>
                         <Progress value={sessionStats.skillBreakdown.technical} className="h-2" />
@@ -391,33 +436,33 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
                     <h3 className="font-semibold mb-4 text-emerald-800">Session Summary</h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-slate-600">Session Type:</span>
+                        <span className="text-muted-foreground">Session Type:</span>
                         <Badge className="capitalize bg-emerald-100 text-emerald-800">{sessionType}</Badge>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600">Questions Answered:</span>
-                        <span className="font-medium text-slate-800">{answers.filter(a => a).length} / {questions.length}</span>
+                        <span className="text-muted-foreground">Questions Answered:</span>
+                        <span className="font-medium">{answers.filter(a => a).length} / {currentQuestions.length}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600">Time Used:</span>
-                        <span className="font-medium text-slate-800">{formatTime(300 - timeLeft)}</span>
+                        <span className="text-muted-foreground">Time Used:</span>
+                        <span className="font-medium">{formatTime(300 - timeLeft)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600">Industry:</span>
-                        <span className="font-medium text-slate-800">{interviewConfig.industry || "General"}</span>
+                        <span className="text-muted-foreground">Language:</span>
+                        <span className="font-medium">{languages.find(l => l.code === selectedLanguage)?.name}</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-slate-50 p-6 rounded-xl border">
-                  <h3 className="font-semibold mb-3 text-slate-800">AI Feedback</h3>
-                  <p className="text-slate-700 mb-4">{sessionStats.detailedFeedback}</p>
+                <div className="bg-muted/50 p-6 rounded-xl border">
+                  <h3 className="font-semibold mb-3">AI Feedback</h3>
+                  <p className="text-muted-foreground mb-4">{sessionStats.detailedFeedback}</p>
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <h4 className="font-medium text-emerald-700 mb-2">Strengths</h4>
-                      <ul className="text-sm text-slate-600 space-y-1">
+                      <ul className="text-sm text-muted-foreground space-y-1">
                         {sessionStats.strengths.map((strength: string, index: number) => (
                           <li key={index} className="flex items-center">
                             <CheckCircle className="h-3 w-3 text-emerald-500 mr-2" />
@@ -428,7 +473,7 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
                     </div>
                     <div>
                       <h4 className="font-medium text-amber-700 mb-2">Areas for Improvement</h4>
-                      <ul className="text-sm text-slate-600 space-y-1">
+                      <ul className="text-sm text-muted-foreground space-y-1">
                         {sessionStats.weaknesses.map((weakness: string, index: number) => (
                           <li key={index} className="flex items-center">
                             <ArrowRight className="h-3 w-3 text-amber-500 mr-2" />
@@ -441,10 +486,10 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
                 </div>
                 
                 <div className="flex space-x-3 justify-center">
-                  <Button onClick={onBack} variant="outline" className="border-slate-300 hover:bg-slate-50">
+                  <Button onClick={onBack} variant="outline" className="border-muted-foreground/30 hover:bg-muted">
                     Back to Dashboard
                   </Button>
-                  <Button onClick={() => window.location.reload()} className="bg-blue-600 hover:bg-blue-700">
+                  <Button onClick={() => window.location.reload()} className="bg-primary hover:bg-primary/90">
                     Start Another Session
                   </Button>
                 </div>
@@ -504,26 +549,26 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50">
       <div className="container mx-auto px-6 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center">
-            <Button variant="ghost" onClick={onBack} className="mr-4 hover:bg-slate-100">
+            <Button variant="ghost" onClick={onBack} className="mr-4 hover:bg-muted">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800">5-Minute Quick Session</h1>
-              <p className="text-slate-600">Choose between text or voice interview practice</p>
+              <h1 className="text-3xl font-bold">5-Minute Quick Session</h1>
+              <p className="text-muted-foreground">Choose between text or voice interview practice</p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
             <div className="text-right">
-              <div className={`text-lg font-bold ${timeLeft < 60 ? 'text-red-600' : 'text-blue-600'}`}>
+              <div className={`text-lg font-bold ${timeLeft < 60 ? 'text-destructive' : 'text-primary'}`}>
                 {formatTime(timeLeft)}
               </div>
-              <div className="text-sm text-slate-500">remaining</div>
+              <div className="text-sm text-muted-foreground">remaining</div>
             </div>
           </div>
         </div>
@@ -533,9 +578,9 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
           <Card className="mb-6 shadow-lg border-0">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-slate-700">Progress</span>
-                <span className="text-sm text-slate-600">
-                  Question {currentQuestionIndex + 1} of {questions.length}
+                <span className="text-sm font-medium">Progress</span>
+                <span className="text-sm text-muted-foreground">
+                  Question {currentQuestionIndex + 1} of {currentQuestions.length}
                 </span>
               </div>
               <Progress value={progressPercentage} className="w-full h-2" />
@@ -546,19 +591,37 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
             /* Session Type Selection */
             <Card className="shadow-xl border-0">
               <CardHeader className="text-center">
-                <CardTitle className="text-2xl text-slate-800">Choose Your Interview Style</CardTitle>
+                <CardTitle className="text-2xl">Choose Your Interview Style</CardTitle>
                 <CardDescription>
                   Select how you'd like to practice - both options cover the same essential questions
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-8">
+                {/* Language Selector */}
+                <div className="flex items-center justify-center space-x-2 mb-6">
+                  <Globe className="h-4 w-4 text-muted-foreground" />
+                  <label className="text-sm font-medium">Language:</label>
+                  <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {languages.map((lang) => (
+                        <SelectItem key={lang.code} value={lang.code}>
+                          {lang.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <Tabs defaultValue="text" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 mb-8 bg-slate-100">
-                    <TabsTrigger value="text" className="flex items-center space-x-2 data-[state=active]:bg-white">
+                  <TabsList className="grid w-full grid-cols-2 mb-8 bg-muted/50">
+                    <TabsTrigger value="text" className="flex items-center space-x-2 data-[state=active]:bg-background">
                       <MessageSquare className="h-4 w-4" />
                       <span>Text Interview</span>
                     </TabsTrigger>
-                    <TabsTrigger value="voice" className="flex items-center space-x-2 data-[state=active]:bg-white">
+                    <TabsTrigger value="voice" className="flex items-center space-x-2 data-[state=active]:bg-background">
                       <Mic className="h-4 w-4" />
                       <span>Voice Interview</span>
                     </TabsTrigger>
@@ -566,28 +629,28 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
                   
                   <TabsContent value="text" className="space-y-6">
                     <div className="text-center">
-                      <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <MessageSquare className="h-10 w-10 text-blue-600" />
+                      <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <MessageSquare className="h-10 w-10 text-primary" />
                       </div>
-                      <h3 className="text-xl font-semibold mb-2 text-slate-800">Text-Based Interview</h3>
-                      <p className="text-slate-600 mb-6">Type your responses to interview questions</p>
+                      <h3 className="text-xl font-semibold mb-2">Text-Based Interview</h3>
+                      <p className="text-muted-foreground mb-6">Type your responses to interview questions</p>
                       <div className="grid md:grid-cols-3 gap-4 mb-6 text-sm">
-                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                          <p className="font-medium text-blue-800">✍️ Written Responses</p>
-                          <p className="text-blue-600">Perfect for organizing thoughts</p>
+                        <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+                          <p className="font-medium text-primary">✍️ Written Responses</p>
+                          <p className="text-primary/70">Perfect for organizing thoughts</p>
                         </div>
-                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                          <p className="font-medium text-blue-800">⏰ Self-Paced</p>
-                          <p className="text-blue-600">Take time to craft answers</p>
+                        <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+                          <p className="font-medium text-primary">⏰ Self-Paced</p>
+                          <p className="text-primary/70">Take time to craft answers</p>
                         </div>
-                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                          <p className="font-medium text-blue-800">📝 Structure Practice</p>
-                          <p className="text-blue-600">Focus on answer organization</p>
+                        <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+                          <p className="font-medium text-primary">📝 Structure Practice</p>
+                          <p className="text-primary/70">Focus on answer organization</p>
                         </div>
                       </div>
                       <Button 
                         onClick={startTextSession}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
+                        className="bg-primary hover:bg-primary/90 text-white px-8 py-3"
                         size="lg"
                       >
                         <MessageSquare className="h-4 w-4 mr-2" />
@@ -598,36 +661,36 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
                   
                   <TabsContent value="voice" className="space-y-6">
                     <div className="text-center">
-                      <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Mic className="h-10 w-10 text-emerald-600" />
+                      <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Mic className="h-10 w-10 text-accent" />
                       </div>
-                      <h3 className="text-xl font-semibold mb-2 text-slate-800">Voice Interview</h3>
-                      <p className="text-slate-600 mb-6">Speak naturally with our AI interviewer</p>
+                      <h3 className="text-xl font-semibold mb-2">Voice Interview</h3>
+                      <p className="text-muted-foreground mb-6">Speak naturally with our AI interviewer</p>
                       
                       {vapiError && (
-                        <div className="bg-red-50 border border-red-200 p-4 rounded-lg mb-4">
-                          <p className="text-red-700 text-sm">Voice system unavailable. Please use text interview.</p>
+                        <div className="bg-destructive/5 border border-destructive/20 p-4 rounded-lg mb-4">
+                          <p className="text-destructive text-sm">Voice system unavailable. Please use text interview.</p>
                         </div>
                       )}
                       
                       <div className="grid md:grid-cols-3 gap-4 mb-6 text-sm">
-                        <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
-                          <p className="font-medium text-emerald-800">🎤 Real Conversation</p>
-                          <p className="text-emerald-600">Practice speaking skills</p>
+                        <div className="bg-accent/5 p-4 rounded-lg border border-accent/20">
+                          <p className="font-medium text-accent">🎤 Real Conversation</p>
+                          <p className="text-accent/70">Practice speaking skills</p>
                         </div>
-                        <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
-                          <p className="font-medium text-emerald-800">🤖 AI Interviewer</p>
-                          <p className="text-emerald-600">Interactive responses</p>
+                        <div className="bg-accent/5 p-4 rounded-lg border border-accent/20">
+                          <p className="font-medium text-accent">🤖 AI Interviewer</p>
+                          <p className="text-accent/70">Interactive responses</p>
                         </div>
-                        <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
-                          <p className="font-medium text-emerald-800">⚡ Real-time</p>
-                          <p className="text-emerald-600">Immediate feedback</p>
+                        <div className="bg-accent/5 p-4 rounded-lg border border-accent/20">
+                          <p className="font-medium text-accent">⚡ Real-time</p>
+                          <p className="text-accent/70">Immediate feedback</p>
                         </div>
                       </div>
                       <Button 
                         onClick={startVoiceSession}
                         disabled={!isVapiInitialized || vapiError}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 disabled:bg-gray-400"
+                        className="bg-accent hover:bg-accent/90 text-white px-8 py-3 disabled:bg-muted-foreground"
                         size="lg"
                       >
                         <Mic className="h-4 w-4 mr-2" />
@@ -645,7 +708,7 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
               <div className="lg:col-span-2">
                 <Card className="shadow-xl border-0">
                   <CardHeader>
-                    <CardTitle className="flex items-center text-slate-800">
+                    <CardTitle className="flex items-center">
                       {sessionType === "text" ? <MessageSquare className="h-5 w-5 mr-2" /> : <Mic className="h-5 w-5 mr-2" />}
                       Question {currentQuestionIndex + 1}
                     </CardTitle>
@@ -657,9 +720,9 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="p-6 bg-blue-50 rounded-lg border-l-4 border-blue-500 mb-6">
-                      <p className="text-lg font-medium text-blue-800">
-                        {questions[currentQuestionIndex]}
+                    <div className="p-6 bg-primary/5 rounded-lg border-l-4 border-primary mb-6">
+                      <p className="text-lg font-medium text-primary">
+                        {currentQuestions[currentQuestionIndex]}
                       </p>
                     </div>
                     
@@ -669,16 +732,16 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
                           value={currentAnswer}
                           onChange={(e) => setCurrentAnswer(e.target.value)}
                           placeholder="Type your answer here..."
-                          className="w-full h-40 p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full h-40 p-4 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                         />
                         
                         <div className="flex space-x-3 mt-4">
                           <Button 
                             onClick={nextQuestion} 
                             disabled={!currentAnswer.trim()}
-                            className="bg-blue-600 hover:bg-blue-700"
+                            className="bg-primary hover:bg-primary/90"
                           >
-                            {currentQuestionIndex < questions.length - 1 ? (
+                            {currentQuestionIndex < currentQuestions.length - 1 ? (
                               <>
                                 Next Question
                                 <ArrowRight className="h-4 w-4 ml-2" />
@@ -694,23 +757,23 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
                       </>
                     ) : (
                       <div className="text-center py-8">
-                        <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div className="w-24 h-24 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
                           {isCallActive ? (
-                            <Mic className="h-12 w-12 text-emerald-600 animate-pulse" />
+                            <Mic className="h-12 w-12 text-accent animate-pulse" />
                           ) : (
-                            <Phone className="h-12 w-12 text-slate-400" />
+                            <Phone className="h-12 w-12 text-muted-foreground" />
                           )}
                         </div>
-                        <div className="text-lg font-semibold mb-2 text-slate-800">
+                        <div className="text-lg font-semibold mb-2">
                           {isCallActive ? 'Interview Active' : 'Connecting...'}
                         </div>
                         {isCallActive && (
                           <div className="space-y-4">
-                            <p className="text-slate-600">Speak clearly and naturally</p>
+                            <p className="text-muted-foreground">Speak clearly and naturally</p>
                             <Button
                               onClick={endVoiceSession}
                               variant="destructive"
-                              className="bg-red-500 hover:bg-red-600"
+                              className="bg-destructive hover:bg-destructive/90"
                             >
                               <PhoneOff className="h-4 w-4 mr-2" />
                               End Interview
@@ -728,25 +791,25 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
                 {/* Session Overview */}
                 <Card className="shadow-lg border-0">
                   <CardHeader>
-                    <CardTitle className="text-slate-800">Session Overview</CardTitle>
+                    <CardTitle>Session Overview</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between">
-                        <span className="font-medium text-slate-600">Type:</span>
-                        <Badge className="capitalize bg-blue-100 text-blue-800">{sessionType}</Badge>
+                        <span className="font-medium text-muted-foreground">Type:</span>
+                        <Badge className="capitalize bg-primary/10 text-primary">{sessionType}</Badge>
                       </div>
                       <div className="flex justify-between">
-                        <span className="font-medium text-slate-600">Duration:</span>
-                        <span className="text-slate-800">5 minutes</span>
+                        <span className="font-medium text-muted-foreground">Duration:</span>
+                        <span>5 minutes</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="font-medium text-slate-600">Questions:</span>
-                        <span className="text-slate-800">3 essential questions</span>
+                        <span className="font-medium text-muted-foreground">Questions:</span>
+                        <span>3 essential questions</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="font-medium text-slate-600">Industry:</span>
-                        <span className="text-slate-800">{interviewConfig.industry || "General"}</span>
+                        <span className="font-medium text-muted-foreground">Language:</span>
+                        <span>{languages.find(l => l.code === selectedLanguage)?.name}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -755,21 +818,21 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
                 {/* Questions Progress */}
                 <Card className="shadow-lg border-0">
                   <CardHeader>
-                    <CardTitle className="text-slate-800">Questions Progress</CardTitle>
+                    <CardTitle>Questions Progress</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {questions.map((_, index) => (
+                      {currentQuestions.map((_, index) => (
                         <div 
                           key={index} 
                           className={`flex items-center space-x-3 text-sm ${
-                            index === currentQuestionIndex ? 'text-blue-600 font-medium' : 
-                            index < currentQuestionIndex ? 'text-emerald-600' : 'text-slate-400'
+                            index === currentQuestionIndex ? 'text-primary font-medium' : 
+                            index < currentQuestionIndex ? 'text-emerald-600' : 'text-muted-foreground'
                           }`}
                         >
                           <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-                            index === currentQuestionIndex ? 'bg-blue-100 text-blue-600' :
-                            index < currentQuestionIndex ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'
+                            index === currentQuestionIndex ? 'bg-primary/10 text-primary' :
+                            index < currentQuestionIndex ? 'bg-emerald-100 text-emerald-600' : 'bg-muted text-muted-foreground'
                           }`}>
                             {index < currentQuestionIndex ? <CheckCircle className="h-3 w-3" /> : index + 1}
                           </div>
