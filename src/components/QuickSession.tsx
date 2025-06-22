@@ -44,7 +44,7 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
 
   const languages = [
     { code: "en", name: "English", vapiLocale: "en-US" as const },
-    { code: "hi", name: "हिंदी (Hindi)", vapiLocale: "hi-IN" as const }
+    { code: "hi", name: "हिंदी (Hindi)", vapiLocale: "hi" as const }
   ];
 
   const questions = [
@@ -275,7 +275,7 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
         transcriber: {
           provider: "deepgram" as const,
           model: "nova-2" as const,
-          language: currentLanguage?.vapiLocale || "en-US"
+          language: currentLanguage?.vapiLocale || ("en-US" as const)
         }
       };
 
