@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,8 +32,8 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
   const initializeAttempted = useRef(false);
 
   const languages = [
-    { code: "en", name: "English", locale: "en-US" },
-    { code: "hi", name: "हिंदी (Hindi)", locale: "hi-IN" }
+    { code: "en", name: "English", vapiLocale: "en-US" as const },
+    { code: "hi", name: "हिंदी (Hindi)", vapiLocale: "hi-IN" as const }
   ];
 
   // Initialize Vapi with improved error handling
@@ -284,7 +285,7 @@ Start with: "Hello! Thank you for joining us today. I'm excited to learn more ab
       transcriber: {
         provider: "deepgram" as const,
         model: "nova-2" as const,
-        language: currentLanguage?.locale || "en-US"
+        language: currentLanguage?.vapiLocale || "en-US"
       }
     };
 

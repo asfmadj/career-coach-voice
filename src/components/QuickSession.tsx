@@ -43,8 +43,8 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
   const { toast } = useToast();
 
   const languages = [
-    { code: "en", name: "English", locale: "en-US" },
-    { code: "hi", name: "हिंदी (Hindi)", locale: "hi-IN" }
+    { code: "en", name: "English", vapiLocale: "en-US" as const },
+    { code: "hi", name: "हिंदी (Hindi)", vapiLocale: "hi-IN" as const }
   ];
 
   const questions = [
@@ -275,7 +275,7 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
         transcriber: {
           provider: "deepgram" as const,
           model: "nova-2" as const,
-          language: currentLanguage?.locale || "en-US"
+          language: currentLanguage?.vapiLocale || "en-US"
         }
       };
 
