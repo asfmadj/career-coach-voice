@@ -1,10 +1,11 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Clock, TrendingUp, CheckCircle, AlertCircle, Lightbulb, Download, Play, Plus } from "lucide-react";
+import { ArrowLeft, Clock, TrendingUp, CheckCircle, AlertCircle, Lightbulb, Download, Play, Plus, Brain, Target } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from "react";
+import { analyzeInterviewWithGemini } from "@/utils/geminiAnalytics";
 
 interface SessionReviewProps {
   session: any;
@@ -13,14 +14,53 @@ interface SessionReviewProps {
 
 export const SessionReview = ({ session, onBack }: SessionReviewProps) => {
   const { toast } = useToast();
+  const [analysis, setAnalysis] = useState<any>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  useEffect(() => {
+    if (session && !analysis) {
+      analyzeSession();
+    }
+  }, [session]);
+
+  const analyzeSession = async () => {
+    if (!session) return;
+    
+    setIsAnalyzing(true);
+    try {
+      const result = await analyzeInterviewWithGemini({
+        questions: session.questions || [],
+        answers: session.answers || [],
+        type: session.type || "General",
+        industry: session.industry || "Technology",
+        level: session.level || "Mid-level",
+        duration: session.duration || "15 minutes"
+      });
+      
+      setAnalysis(result);
+      
+      // Update session score with Gemini analysis
+      session.score = result.overallScore;
+      
+    } catch (error) {
+      console.error('Analysis failed:', error);
+      toast({
+        title: "Analysis Error",
+        description: "Using fallback analysis method.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50">
         <div className="container mx-auto px-6 py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">Session not found</h1>
-            <Button onClick={onBack}>Back to Dashboard</Button>
+            <Button onClick={onBack} className="bg-indigo-600 hover:bg-indigo-700">Back to Dashboard</Button>
           </div>
         </div>
       </div>
@@ -28,45 +68,17 @@ export const SessionReview = ({ session, onBack }: SessionReviewProps) => {
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return "text-green-600";
-    if (score >= 80) return "text-blue-600";
-    if (score >= 70) return "text-yellow-600";
-    return "text-red-600";
+    if (score >= 85) return "text-emerald-600";
+    if (score >= 75) return "text-blue-600";
+    if (score >= 65) return "text-amber-600";
+    return "text-red-500";
   };
 
   const getScoreBg = (score: number) => {
-    if (score >= 90) return "bg-green-100";
-    if (score >= 80) return "bg-blue-100";
-    if (score >= 70) return "bg-yellow-100";
-    return "bg-red-100";
-  };
-
-  const getDetailedFeedback = (score: number, type: string) => {
-    if (score >= 90) {
-      return {
-        title: "Outstanding Performance!",
-        message: "You demonstrated exceptional interview skills with clear, structured responses and strong confidence. Your answers showed deep understanding and excellent communication abilities.",
-        areas: ["Maintain your excellent preparation routine", "Consider mentoring others", "Focus on advanced technical concepts"]
-      };
-    } else if (score >= 80) {
-      return {
-        title: "Strong Performance!",
-        message: "You showed good interview skills with well-structured answers. There's room for minor improvements in delivery and confidence.",
-        areas: ["Practice more technical scenarios", "Work on response timing", "Enhance storytelling with examples"]
-      };
-    } else if (score >= 70) {
-      return {
-        title: "Good Foundation, Needs Improvement",
-        message: "You have a solid understanding but need to work on clarity and structure. Your responses could be more organized and confident.",
-        areas: ["Practice STAR method consistently", "Improve answer organization", "Build confidence through repetition"]
-      };
-    } else {
-      return {
-        title: "Significant Improvement Needed",
-        message: "Your responses need substantial work. Focus on fundamentals like clear communication, proper structure, and relevant examples.",
-        areas: ["Study common interview questions", "Practice basic communication skills", "Work on confidence building"]
-      };
-    }
+    if (score >= 85) return "bg-emerald-50 border-emerald-200";
+    if (score >= 75) return "bg-blue-50 border-blue-200";
+    if (score >= 65) return "bg-amber-50 border-amber-200";
+    return "bg-red-50 border-red-200";
   };
 
   const handlePracticeSimilar = () => {
@@ -74,9 +86,8 @@ export const SessionReview = ({ session, onBack }: SessionReviewProps) => {
       title: "Starting Similar Practice",
       description: `Preparing ${session.type.toLowerCase()} questions for ${session.industry}...`
     });
-    // Navigate to practice session with similar questions
     setTimeout(() => {
-      onBack(); // Return to dashboard to start new session
+      onBack();
     }, 1500);
   };
 
@@ -85,19 +96,17 @@ export const SessionReview = ({ session, onBack }: SessionReviewProps) => {
       sessionDate: session.date,
       sessionType: session.type,
       industry: session.industry,
-      score: session.score,
-      duration: session.duration,
+      geminiAnalysis: analysis,
       questions: session.questions,
       answers: session.answers,
-      feedback: session.feedback,
-      detailedFeedback: getDetailedFeedback(session.score, session.type)
+      generatedAt: new Date().toISOString()
     };
 
     const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `interview-report-${session.date}.json`;
+    a.download = `interview-analysis-${session.date}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -105,136 +114,201 @@ export const SessionReview = ({ session, onBack }: SessionReviewProps) => {
 
     toast({
       title: "Report Exported",
-      description: "Your session report has been downloaded successfully."
+      description: "Your detailed analysis report has been downloaded.",
     });
   };
 
   const handleStartNewSession = () => {
     toast({
       title: "Starting New Session",
-      description: "Preparing a new interview session for you..."
+      description: "Preparing a new interview session..."
     });
-    onBack(); // Return to dashboard to start new session
+    onBack();
   };
 
-  const detailedFeedback = getDetailedFeedback(session.score, session.type);
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50">
       <div className="container mx-auto px-6 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center">
-            <Button variant="ghost" onClick={onBack} className="mr-4">
+            <Button variant="ghost" onClick={onBack} className="mr-4 hover:bg-slate-100">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
             </Button>
             <div>
-              <h1 className="text-2xl font-bold">Session Review</h1>
-              <p className="text-gray-600">{session.type} Interview - {session.date}</p>
+              <h1 className="text-3xl font-bold text-slate-800">Interview Analysis</h1>
+              <p className="text-slate-600">{session.type} Interview - {session.date}</p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <Badge variant="outline">{session.industry}</Badge>
-            <div className="flex items-center space-x-2">
-              <Clock className="h-4 w-4 text-gray-400" />
-              <span className="text-sm text-gray-600">{session.duration}</span>
+            <Badge variant="outline" className="bg-white">{session.industry}</Badge>
+            <div className="flex items-center space-x-2 text-slate-600">
+              <Clock className="h-4 w-4" />
+              <span className="text-sm">{session.duration}</span>
             </div>
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto">
+        {isAnalyzing && (
+          <Card className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-3">
+                <Brain className="h-6 w-6 text-blue-600 animate-pulse" />
+                <div>
+                  <p className="font-semibold text-blue-800">AI Analysis in Progress</p>
+                  <p className="text-sm text-blue-600">Gemini AI is analyzing your interview performance...</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Performance Overview */}
-              <Card>
-                <CardHeader>
+              {/* AI-Powered Performance Overview */}
+              <Card className="shadow-lg">
+                <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-t-lg">
                   <CardTitle className="flex items-center">
-                    <TrendingUp className="h-5 w-5 mr-2" />
-                    Performance Overview
+                    <Brain className="h-6 w-6 mr-2" />
+                    AI Performance Analysis
                   </CardTitle>
+                  <CardDescription className="text-indigo-100">
+                    Powered by Gemini AI for accurate assessment
+                  </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-lg font-medium">Overall Score</span>
-                    <div className={`text-3xl font-bold ${getScoreColor(session.score)}`}>
-                      {session.score}%
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="text-lg font-medium text-slate-700">Overall Score</span>
+                    <div className={`text-4xl font-bold ${getScoreColor(analysis?.overallScore || session.score)}`}>
+                      {analysis?.overallScore || session.score}%
                     </div>
                   </div>
-                  <Progress value={session.score} className="mb-4" />
+                  <Progress value={analysis?.overallScore || session.score} className="mb-6 h-3" />
                   
-                  <div className={`p-4 rounded-lg ${getScoreBg(session.score)} border-l-4 ${session.score >= 80 ? 'border-green-500' : session.score >= 70 ? 'border-yellow-500' : 'border-red-500'}`}>
-                    <div className="flex items-start">
-                      {session.score >= 80 ? (
-                        <CheckCircle className="h-5 w-5 text-green-600 mr-2 mt-0.5" />
-                      ) : (
-                        <AlertCircle className="h-5 w-5 text-yellow-600 mr-2 mt-0.5" />
-                      )}
-                      <div>
-                        <p className="font-medium text-gray-800 mb-1">
-                          {detailedFeedback.title}
-                        </p>
-                        <p className="text-sm text-gray-700 mb-2">{detailedFeedback.message}</p>
-                        <div className="mt-2">
-                          <p className="text-sm font-medium text-gray-800 mb-1">Key Areas to Focus On:</p>
-                          <ul className="text-sm text-gray-700 space-y-1">
-                            {detailedFeedback.areas.map((area, index) => (
-                              <li key={index} className="flex items-center">
-                                <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></div>
-                                {area}
-                              </li>
-                            ))}
-                          </ul>
+                  {analysis && (
+                    <>
+                      {/* Skill Breakdown */}
+                      <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium text-slate-600">Communication</span>
+                            <span className="text-sm font-bold text-slate-800">{analysis.skillBreakdown.communication}%</span>
+                          </div>
+                          <Progress value={analysis.skillBreakdown.communication} className="h-2" />
+                        </div>
+                        <div>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium text-slate-600">Technical</span>
+                            <span className="text-sm font-bold text-slate-800">{analysis.skillBreakdown.technical}%</span>
+                          </div>
+                          <Progress value={analysis.skillBreakdown.technical} className="h-2" />
+                        </div>
+                        <div>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium text-slate-600">Problem Solving</span>
+                            <span className="text-sm font-bold text-slate-800">{analysis.skillBreakdown.problemSolving}%</span>
+                          </div>
+                          <Progress value={analysis.skillBreakdown.problemSolving} className="h-2" />
+                        </div>
+                        <div>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium text-slate-600">Confidence</span>
+                            <span className="text-sm font-bold text-slate-800">{analysis.skillBreakdown.confidence}%</span>
+                          </div>
+                          <Progress value={analysis.skillBreakdown.confidence} className="h-2" />
                         </div>
                       </div>
-                    </div>
-                  </div>
+
+                      {/* AI Feedback */}
+                      <div className={`p-5 rounded-lg border-l-4 ${getScoreBg(analysis.overallScore)} ${
+                        analysis.overallScore >= 85 ? 'border-emerald-500' : 
+                        analysis.overallScore >= 75 ? 'border-blue-500' : 
+                        analysis.overallScore >= 65 ? 'border-amber-500' : 'border-red-500'
+                      }`}>
+                        <div className="flex items-start">
+                          <Brain className="h-5 w-5 text-indigo-600 mr-3 mt-0.5" />
+                          <div>
+                            <p className="font-medium text-slate-800 mb-2">AI Assessment</p>
+                            <p className="text-sm text-slate-700 mb-4">{analysis.detailedFeedback}</p>
+                            
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-sm font-medium text-emerald-700 mb-2">Strengths</p>
+                                <ul className="text-sm text-slate-600 space-y-1">
+                                  {analysis.strengths.map((strength: string, index: number) => (
+                                    <li key={index} className="flex items-center">
+                                      <CheckCircle className="h-3 w-3 text-emerald-500 mr-2" />
+                                      {strength}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-amber-700 mb-2">Areas for Improvement</p>
+                                <ul className="text-sm text-slate-600 space-y-1">
+                                  {analysis.weaknesses.map((weakness: string, index: number) => (
+                                    <li key={index} className="flex items-center">
+                                      <Target className="h-3 w-3 text-amber-500 mr-2" />
+                                      {weakness}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
 
-              {/* Questions and Answers */}
-              <Card>
+              {/* Questions and Detailed Scoring */}
+              <Card className="shadow-lg">
                 <CardHeader>
-                  <CardTitle>Questions & Answers</CardTitle>
+                  <CardTitle className="text-slate-800">Question-by-Question Analysis</CardTitle>
                   <CardDescription>
-                    Review your responses to each interview question
+                    Individual performance breakdown with AI scoring
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
                     {session.questions.map((question: string, index: number) => {
-                      // Generate individual question scores based on overall performance
-                      const questionScore = session.score + (Math.random() * 20 - 10); // Slight variation
+                      const questionScore = analysis?.questionScores?.[index] || (session.score + (Math.random() * 20 - 10));
                       const normalizedScore = Math.max(0, Math.min(100, Math.round(questionScore)));
                       
                       return (
-                        <div key={index} className="border-l-4 border-blue-200 pl-4">
+                        <div key={index} className="border-l-4 border-indigo-200 pl-6 bg-slate-50 p-4 rounded-r-lg">
                           <div className="mb-3">
                             <div className="flex items-center justify-between mb-2">
-                              <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
+                              <Badge variant="outline" className="bg-white">
                                 Question {index + 1}
-                              </span>
-                              <span className={`text-sm font-medium ${getScoreColor(normalizedScore)}`}>
+                              </Badge>
+                              <span className={`text-sm font-bold ${getScoreColor(normalizedScore)}`}>
                                 {normalizedScore}%
                               </span>
                             </div>
-                            <p className="font-medium text-gray-800 mb-3">{question}</p>
+                            <p className="font-medium text-slate-800 mb-3">{question}</p>
                           </div>
                           
-                          <div className="bg-gray-50 p-4 rounded-lg mb-3">
-                            <p className="text-sm text-gray-600 mb-1">Your Answer:</p>
-                            <p className="text-gray-800">{session.answers[index] || "No answer recorded"}</p>
+                          <div className="bg-white p-4 rounded-lg mb-3 border">
+                            <p className="text-sm text-slate-600 mb-1 font-medium">Your Answer:</p>
+                            <p className="text-slate-800">{session.answers[index] || "No answer recorded"}</p>
                           </div>
 
-                          <div className="bg-blue-50 p-3 rounded-lg">
-                            <p className="text-sm text-blue-800 font-medium mb-1">Feedback:</p>
-                            <p className="text-sm text-blue-700">
-                              {normalizedScore >= 80 
-                                ? "Well-structured response with clear examples. Good use of specific details."
-                                : normalizedScore >= 70
-                                ? "Good foundation but could benefit from more specific examples and clearer structure."
-                                : "Consider using the STAR method and providing more concrete examples."}
+                          <div className="bg-indigo-50 p-3 rounded-lg border border-indigo-200">
+                            <p className="text-sm text-indigo-800 font-medium mb-1">AI Feedback:</p>
+                            <p className="text-sm text-indigo-700">
+                              {normalizedScore >= 85 
+                                ? "Excellent response with clear structure, specific examples, and strong technical knowledge."
+                                : normalizedScore >= 75
+                                ? "Good response with solid foundation. Consider adding more specific examples and detail."
+                                : normalizedScore >= 65
+                                ? "Adequate response but needs improvement in structure and specificity using STAR method."
+                                : "Response needs significant improvement. Focus on clear structure, relevant examples, and addressing all parts of the question."}
                             </p>
                           </div>
                         </div>
@@ -245,12 +319,12 @@ export const SessionReview = ({ session, onBack }: SessionReviewProps) => {
               </Card>
             </div>
 
-            {/* Sidebar */}
+            {/* Enhanced Sidebar */}
             <div className="space-y-6">
               {/* Session Details */}
-              <Card>
+              <Card className="shadow-lg">
                 <CardHeader>
-                  <CardTitle>Session Details</CardTitle>
+                  <CardTitle className="text-slate-800">Session Details</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3 text-sm">
@@ -278,62 +352,51 @@ export const SessionReview = ({ session, onBack }: SessionReviewProps) => {
                 </CardContent>
               </Card>
 
-              {/* Improvement Tips */}
-              <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-yellow-800">
-                    <Lightbulb className="h-5 w-5 mr-2" />
-                    Improvement Tips
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {session.score < 80 && (
-                      <div className="p-3 bg-white rounded-lg border border-yellow-200">
-                        <p className="text-sm font-medium text-yellow-800 mb-1">Structure Your Answers</p>
-                        <p className="text-xs text-yellow-700">Use the STAR method: Situation, Task, Action, Result</p>
-                      </div>
-                    )}
-                    
-                    {session.type === "Technical" && (
-                      <div className="p-3 bg-white rounded-lg border border-yellow-200">
-                        <p className="text-sm font-medium text-yellow-800 mb-1">Explain Your Thinking</p>
-                        <p className="text-xs text-yellow-700">Walk through your problem-solving process step by step</p>
-                      </div>
-                    )}
-                    
-                    <div className="p-3 bg-white rounded-lg border border-yellow-200">
-                      <p className="text-sm font-medium text-yellow-800 mb-1">Practice Regularly</p>
-                      <p className="text-xs text-yellow-700">Consistent practice leads to better performance</p>
+              {/* AI Recommendations */}
+              {analysis && (
+                <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200 shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-amber-800">
+                      <Lightbulb className="h-5 w-5 mr-2" />
+                      AI Recommendations
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {analysis.recommendations.map((rec: string, index: number) => (
+                        <div key={index} className="p-3 bg-white rounded-lg border border-amber-200">
+                          <p className="text-sm font-medium text-amber-800 mb-1">Recommendation {index + 1}</p>
+                          <p className="text-xs text-amber-700">{rec}</p>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Action Buttons */}
-              <Card>
+              <Card className="shadow-lg">
                 <CardHeader>
-                  <CardTitle>Next Steps</CardTitle>
+                  <CardTitle className="text-slate-800">Next Steps</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Button 
-                    className="w-full" 
-                    variant="outline"
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white" 
                     onClick={handlePracticeSimilar}
                   >
                     <Play className="h-4 w-4 mr-2" />
                     Practice Similar Questions
                   </Button>
                   <Button 
-                    className="w-full" 
+                    className="w-full border-indigo-200 text-indigo-700 hover:bg-indigo-50" 
                     variant="outline"
                     onClick={handleExportReport}
                   >
                     <Download className="h-4 w-4 mr-2" />
-                    Export Session Report
+                    Export AI Analysis Report
                   </Button>
                   <Button 
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
                     onClick={handleStartNewSession}
                   >
                     <Plus className="h-4 w-4 mr-2" />
