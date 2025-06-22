@@ -1,8 +1,9 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Mic, MicOff, Phone, PhoneOff, Volume2, AlertCircle, Globe } from "lucide-react";
+import { ArrowLeft, Mic, MicOff, Phone, PhoneOff, Volume2, AlertCircle, Globe, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import Vapi from "@vapi-ai/web";
 import { useToast } from "@/hooks/use-toast";
@@ -27,8 +28,10 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
   const [isInitialized, setIsInitialized] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("en");
+  const [isEnding, setIsEnding] = useState(false);
   const { toast } = useToast();
   const initializeAttempted = useRef(false);
+  const stopRequested = useRef(false);
 
   const languages = [
     { code: "en", name: "English", vapiLocale: "en-US" as const },
@@ -68,6 +71,8 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
           console.log("Call started successfully");
           setIsCallActive(true);
           setHasError(false);
+          setIsEnding(false);
+          stopRequested.current = false;
           toast({
             title: "Interview Started",
             description: "Your AI interview has begun. Speak clearly!",
@@ -77,18 +82,44 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
         vapiInstance.on("call-end", () => {
           console.log("Call ended");
           setIsCallActive(false);
-          toast({
-            title: "Interview Completed",
-            description: "Your interview session has ended.",
-          });
-          setTimeout(() => onComplete(), 2000);
+          setIsEnding(false);
+          if (!stopRequested.current) {
+            toast({
+              title: "Interview Completed",
+              description: "Your interview session has ended.",
+            });
+          }
+          setTimeout(() => onComplete(), 1000);
         });
 
         vapiInstance.on("message", (message: any) => {
           console.log("Vapi message:", message);
           
           if (message.type === "transcript" && message.transcript) {
-            setConversationMessages(prev => [...prev, `${message.role}: ${message.transcript}`]);
+            const messageText = `${message.role === "user" ? "You" : "Interviewer"}: ${message.transcript}`;
+            setConversationMessages(prev => [...prev, messageText]);
+            
+            // Check for stop requests from user
+            if (message.role === "user") {
+              const transcript = message.transcript.toLowerCase();
+              const stopKeywords = [
+                "stop interview", "end interview", "stop this interview", 
+                "end this interview", "i want to stop", "please stop",
+                "साक्षात्कार बंद करो", "साक्षात्कार समाप्त करो", "रोको"
+              ];
+              
+              const shouldStop = stopKeywords.some(keyword => transcript.includes(keyword));
+              
+              if (shouldStop && !stopRequested.current) {
+                console.log("User requested to stop the interview");
+                stopRequested.current = true;
+                setTimeout(() => {
+                  if (vapi && isCallActive) {
+                    vapi.stop();
+                  }
+                }, 1000);
+              }
+            }
             
             // Check if AI is concluding the interview
             if (message.role === "assistant") {
@@ -98,20 +129,22 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
                 "this concludes our interview",
                 "we've reached the end",
                 "interview is complete",
-                "thank you for joining us today"
+                "thank you for joining us today",
+                "आपका समय देने के लिए धन्यवाद",
+                "यह हमारा साक्षात्कार समाप्त होता है"
               ];
               
               const isConclusion = conclusionKeywords.some(keyword => 
                 transcript.includes(keyword)
               );
               
-              if (isConclusion) {
+              if (isConclusion && !stopRequested.current) {
                 console.log("AI is concluding the interview");
                 setTimeout(() => {
                   if (vapi && isCallActive) {
                     vapi.stop();
                   }
-                }, 3000); // Give 3 seconds for the message to finish
+                }, 3000);
               }
             }
           }
@@ -130,6 +163,7 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
           console.error("Vapi error:", error);
           setHasError(true);
           setIsCallActive(false);
+          setIsEnding(false);
           toast({
             title: "Voice Interview Error",
             description: "There was an issue with the voice system. Try restarting or use text interview.",
@@ -164,15 +198,16 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
   // Timer for call duration - modified to handle auto-completion
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (isCallActive) {
+    if (isCallActive && !isEnding) {
       interval = setInterval(() => {
         setCallDuration(prev => {
           const newDuration = prev + 1;
           const maxDurationSeconds = getDurationInMinutes() * 60;
           
           // Auto-end call when time limit reached
-          if (newDuration >= maxDurationSeconds) {
+          if (newDuration >= maxDurationSeconds && !stopRequested.current) {
             console.log("Time limit reached, ending call");
+            stopRequested.current = true;
             if (vapi) {
               vapi.stop();
             }
@@ -185,7 +220,7 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
       setCallDuration(0);
     }
     return () => clearInterval(interval);
-  }, [isCallActive, vapi]);
+  }, [isCallActive, isEnding, vapi]);
 
   const getDurationInMinutes = () => {
     return parseInt(interviewConfig.duration?.split(' ')[0] || '15');
@@ -235,6 +270,7 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
 
 महत्वपूर्ण समय:
 - ${Math.max(durationMinutes-2, 1)} मिनट के बाद, साक्षात्कार को समाप्त करना शुरू करें
+- अगर उम्मीदवार कहता है "साक्षात्कार बंद करो" या "रोको", तुरंत विनम्रता से साक्षात्कार समाप्त करें
 - अंत में कहें "आज आपका समय देने के लिए धन्यवाद। यह हमारा साक्षात्कार समाप्त होता है।"
 
 दिशानिर्देश:
@@ -257,6 +293,7 @@ Your role:
 
 IMPORTANT TIMING:
 - After ${Math.max(durationMinutes-2, 1)} minutes, start wrapping up the interview
+- If the candidate says "stop interview" or "end interview", politely conclude immediately
 - At the end, say "Thank you for your time today. This concludes our interview. We'll be in touch with next steps."
 
 Guidelines:
@@ -291,6 +328,7 @@ Start with: "Hello! Thank you for joining us today. I'm excited to learn more ab
     try {
       console.log("Starting Vapi call with config:", assistantConfig);
       setConversationMessages([]);
+      stopRequested.current = false;
       await vapi.start(assistantConfig);
     } catch (error) {
       console.error("Failed to start interview:", error);
@@ -306,10 +344,17 @@ Start with: "Hello! Thank you for joining us today. I'm excited to learn more ab
   const endInterview = async () => {
     if (vapi && isCallActive) {
       try {
+        setIsEnding(true);
+        stopRequested.current = true;
+        toast({
+          title: "Ending Interview",
+          description: "Your interview is being concluded...",
+        });
         await vapi.stop();
       } catch (error) {
         console.error("Error ending interview:", error);
         setIsCallActive(false);
+        setIsEnding(false);
       }
     }
   };
@@ -446,7 +491,10 @@ Start with: "Hello! Thank you for joining us today. I'm excited to learn more ab
                     )}
                   </div>
                   <div className="text-lg font-semibold mb-2">
-                    {!isInitialized ? 'Initializing...' : isCallActive ? 'Interview Active' : hasError ? 'System Error' : 'Ready to Start'}
+                    {!isInitialized ? 'Initializing...' : 
+                     isEnding ? 'Ending Interview...' :
+                     isCallActive ? 'Interview Active' : 
+                     hasError ? 'System Error' : 'Ready to Start'}
                   </div>
                   {isCallActive && (
                     <div className="text-2xl font-mono text-primary">
@@ -473,6 +521,7 @@ Start with: "Hello! Thank you for joining us today. I'm excited to learn more ab
                         onClick={toggleMute}
                         variant={isMuted ? "destructive" : "outline"}
                         size="lg"
+                        disabled={isEnding}
                       >
                         {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                       </Button>
@@ -480,9 +529,19 @@ Start with: "Hello! Thank you for joining us today. I'm excited to learn more ab
                         onClick={endInterview}
                         variant="destructive"
                         size="lg"
+                        disabled={isEnding}
                       >
-                        <PhoneOff className="h-4 w-4 mr-2" />
-                        End Interview
+                        {isEnding ? (
+                          <>
+                            <X className="h-4 w-4 mr-2 animate-spin" />
+                            Ending...
+                          </>
+                        ) : (
+                          <>
+                            <PhoneOff className="h-4 w-4 mr-2" />
+                            End Interview
+                          </>
+                        )}
                       </Button>
                     </>
                   ) : null}
@@ -550,8 +609,8 @@ Start with: "Hello! Thank you for joining us today. I'm excited to learn more ab
                   <p>Your interview is set for {interviewConfig.duration} - pace yourself accordingly</p>
                 </div>
                 <div>
-                  <p className="font-medium mb-1">🔄 Natural Flow</p>
-                  <p>The AI will ask follow-up questions based on your responses</p>
+                  <p className="font-medium mb-1">🛑 Stop Anytime</p>
+                  <p>Say "stop interview" or click the End Interview button to conclude early</p>
                 </div>
               </div>
             </CardContent>

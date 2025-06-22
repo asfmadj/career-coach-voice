@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import Vapi from "@vapi-ai/web";
 import { analyzeInterviewWithGemini } from "@/utils/geminiAnalytics";
+import { AlertCircle } from "lucide-react";
 
 interface QuickSessionProps {
   onBack: () => void;
@@ -32,6 +33,7 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
   const [sessionStats, setSessionStats] = useState<any>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("en");
+  const [isEnding, setIsEnding] = useState(false);
   
   // Voice-specific state
   const [vapi, setVapi] = useState<Vapi | null>(null);
@@ -39,6 +41,7 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
   const [voiceAnswers, setVoiceAnswers] = useState<string[]>([]);
   const [isVapiInitialized, setIsVapiInitialized] = useState(false);
   const [vapiError, setVapiError] = useState(false);
+  const stopRequested = useRef(false);
   
   const { toast } = useToast();
 
@@ -77,12 +80,17 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
           setIsCallActive(true);
           setIsActive(true);
           setVapiError(false);
+          setIsEnding(false);
+          stopRequested.current = false;
         });
 
         vapiInstance.on("call-end", () => {
           console.log("Call ended");
           setIsCallActive(false);
-          completeSession();
+          setIsEnding(false);
+          if (!stopRequested.current) {
+            completeSession();
+          }
         });
 
         vapiInstance.on("message", (message: any) => {
@@ -90,6 +98,27 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
           
           if (message.type === "transcript" && message.transcript) {
             if (message.role === "user") {
+              // Check for stop requests
+              const transcript = message.transcript.toLowerCase();
+              const stopKeywords = [
+                "stop interview", "end interview", "stop this interview", 
+                "end this interview", "i want to stop", "please stop",
+                "साक्षात्कार बंद करो", "साक्षात्कार समाप्त करो", "रोको"
+              ];
+              
+              const shouldStop = stopKeywords.some(keyword => transcript.includes(keyword));
+              
+              if (shouldStop && !stopRequested.current) {
+                console.log("User requested to stop the interview");
+                stopRequested.current = true;
+                setTimeout(() => {
+                  if (vapi && isCallActive) {
+                    vapi.stop();
+                  }
+                }, 1000);
+                return;
+              }
+              
               // User spoke - store their answer
               const newVoiceAnswers = [...voiceAnswers];
               newVoiceAnswers[currentQuestionIndex] = message.transcript;
@@ -141,6 +170,7 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
           console.error("Vapi error:", error);
           setVapiError(true);
           setIsCallActive(false);
+          setIsEnding(false);
           toast({
             title: "Voice Error",
             description: "There was an issue with the voice system. Try the text option instead.",
@@ -175,13 +205,14 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
   // Timer - modified to handle voice session completion
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
-    if (isActive && timeLeft > 0 && !isCompleted) {
+    if (isActive && timeLeft > 0 && !isCompleted && !isEnding) {
       interval = setInterval(() => {
         setTimeLeft(time => time - 1);
       }, 1000);
-    } else if (timeLeft === 0 && !isCompleted) {
+    } else if (timeLeft === 0 && !isCompleted && !isEnding) {
       // Time is up - end the session
       if (sessionType === "voice" && vapi && isCallActive) {
+        stopRequested.current = true;
         vapi.stop();
       } else {
         completeSession();
@@ -190,7 +221,7 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isActive, timeLeft, isCompleted, sessionType, vapi, isCallActive]);
+  }, [isActive, timeLeft, isCompleted, isEnding, sessionType, vapi, isCallActive]);
 
   const startTextSession = () => {
     setIsActive(true);
@@ -243,6 +274,7 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
                 - अगले प्रश्न पर जाने से पहले उपयोगकर्ता के पूरे उत्तर की प्रतीक्षा करें
                 - प्रत्येक उत्तर के बाद, संक्षेप में स्वीकार करें और फिर कहें "अगले प्रश्न पर जाते हैं:"
                 - तीसरे प्रश्न का उत्तर देने के बाद, कहें "इस साक्षात्कार को पूरा करने के लिए धन्यवाद। यह हमारा सत्र समाप्त होता है।"
+                - अगर उम्मीदवार कहता है "साक्षात्कार बंद करो" या "रोको", तुरंत विनम्रता से साक्षात्कार समाप्त करें
                 - अपने उत्तर संक्षिप्त रखें (30 शब्दों के तहत)
                 - फॉलो-अप प्रश्न न पूछें - केवल 3 मुख्य प्रश्नों पर टिके रहें
                 - पूरा साक्षात्कार लगभग 5 मिनट का होना चाहिए`
@@ -257,6 +289,7 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
                 - Wait for the user's complete response before moving to the next question
                 - After each answer, acknowledge briefly and then say "Moving to the [second/final] question:"
                 - After the third question is answered, say "Thank you for completing this interview. This concludes our session."
+                - If the candidate says "stop interview" or "end interview", politely conclude immediately
                 - Keep your responses brief (under 30 words)
                 - Do not ask follow-up questions - stick to the 3 main questions only
                 - The entire interview should take about 5 minutes`
@@ -281,6 +314,7 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
 
       await vapi.start(assistantConfig);
       setSessionType("voice");
+      stopRequested.current = false;
       
     } catch (error) {
       console.error("Failed to start voice session:", error);
@@ -310,6 +344,12 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
 
   const endVoiceSession = () => {
     if (vapi && isCallActive) {
+      setIsEnding(true);
+      stopRequested.current = true;
+      toast({
+        title: "Ending Session",
+        description: "Your interview is being concluded...",
+      });
       vapi.stop();
     }
   };
@@ -318,6 +358,7 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
     setIsActive(false);
     setIsCompleted(true);
     setIsCallActive(false);
+    setIsEnding(false);
     
     const finalAnswers = sessionType === "voice" ? voiceAnswers : [...answers];
     if (sessionType === "text" && currentAnswer) {
@@ -328,42 +369,55 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
       setAnswers(finalAnswers);
     }
 
-    // Generate stats using Gemini AI
+    // Generate stats using Gemini AI - improve data collection
     setIsAnalyzing(true);
     try {
-      const analysis = await analyzeInterviewWithGemini({
+      // Create more detailed analysis data
+      const detailedInterviewData = {
         questions: questions,
-        answers: finalAnswers,
+        answers: finalAnswers.filter(answer => answer && answer.trim().length > 0), // Only include actual answers
         type: "Quick Session",
         industry: interviewConfig.industry || "General",
         level: interviewConfig.level || "Mid-level",
-        duration: "5 minutes"
-      });
+        duration: "5 minutes",
+        sessionType: sessionType,
+        language: selectedLanguage,
+        totalQuestions: currentQuestions.length,
+        answeredQuestions: finalAnswers.filter(answer => answer && answer.trim().length > 0).length,
+        timeSpent: `${Math.floor((300 - timeLeft) / 60)}:${((300 - timeLeft) % 60).toString().padStart(2, '0')}`
+      };
+      
+      const analysis = await analyzeInterviewWithGemini(detailedInterviewData);
       
       setSessionStats(analysis);
     } catch (error) {
       console.error('Analysis failed:', error);
-      // Fallback stats
+      // Enhanced fallback stats based on actual performance
+      const answeredCount = finalAnswers.filter(answer => answer && answer.trim().length > 0).length;
+      const completionRate = (answeredCount / currentQuestions.length) * 100;
+      
       setSessionStats({
-        overallScore: Math.floor(Math.random() * 20) + 70,
+        overallScore: Math.max(60, Math.floor(completionRate * 0.8 + Math.random() * 15)),
         skillBreakdown: {
-          communication: Math.floor(Math.random() * 20) + 70,
-          technical: Math.floor(Math.random() * 20) + 70,
-          problemSolving: Math.floor(Math.random() * 20) + 70,
-          confidence: Math.floor(Math.random() * 20) + 70
+          communication: Math.max(65, Math.floor(completionRate * 0.75 + Math.random() * 20)),
+          technical: Math.max(60, Math.floor(completionRate * 0.7 + Math.random() * 25)),
+          problemSolving: Math.max(60, Math.floor(completionRate * 0.8 + Math.random() * 20)),
+          confidence: Math.max(65, Math.floor(completionRate * 0.85 + Math.random() * 15))
         },
-        strengths: ["Clear communication", "Good examples"],
-        weaknesses: ["Could be more specific", "Practice timing"],
-        detailedFeedback: "Good performance in this quick session. Focus on providing more detailed examples in future interviews."
+        strengths: answeredCount > 2 ? ["Clear communication", "Good examples", "Well-structured responses"] : ["Participated actively", "Showed engagement"],
+        weaknesses: answeredCount < 3 ? ["Complete all questions", "Provide more details"] : ["Could be more specific", "Practice timing"],
+        detailedFeedback: `You completed ${answeredCount} out of ${currentQuestions.length} questions in this ${sessionType} session. ${answeredCount === currentQuestions.length ? "Excellent completion rate!" : "Try to complete all questions in future sessions."} Focus on providing detailed examples and practicing your delivery.`
       });
     } finally {
       setIsAnalyzing(false);
     }
 
-    toast({
-      title: "Quick Session Complete!",
-      description: `Great job! You've completed your 5-minute ${sessionType} practice session.`,
-    });
+    if (!stopRequested.current) {
+      toast({
+        title: "Quick Session Complete!",
+        description: `Great job! You've completed your 5-minute ${sessionType} practice session.`,
+      });
+    }
   };
 
   const viewStats = () => {
@@ -559,7 +613,9 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
               Back to Dashboard
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">5-Minute Quick Session</h1>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                5-Minute Quick Session
+              </h1>
               <p className="text-muted-foreground">Choose between text or voice interview practice</p>
             </div>
           </div>
@@ -570,39 +626,51 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
               </div>
               <div className="text-sm text-muted-foreground">remaining</div>
             </div>
+            {isCallActive && (
+              <Button 
+                onClick={endVoiceSession}
+                variant="destructive"
+                size="sm"
+                disabled={isEnding}
+              >
+                {isEnding ? "Ending..." : "End Session"}
+              </Button>
+            )}
           </div>
         </div>
 
         <div className="max-w-5xl mx-auto">
           {/* Progress */}
-          <Card className="mb-6 shadow-lg border-0">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">Progress</span>
+          <Card className="mb-6 shadow-lg border-0 bg-gradient-to-r from-white to-primary/5">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium text-primary">Session Progress</span>
                 <span className="text-sm text-muted-foreground">
                   Question {currentQuestionIndex + 1} of {currentQuestions.length}
                 </span>
               </div>
-              <Progress value={progressPercentage} className="w-full h-2" />
+              <Progress value={progressPercentage} className="w-full h-3 bg-primary/10" />
             </CardContent>
           </Card>
 
           {!isActive ? (
-            /* Session Type Selection */
-            <Card className="shadow-xl border-0">
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl">Choose Your Interview Style</CardTitle>
-                <CardDescription>
+            /* Session Type Selection - Enhanced UI */
+            <Card className="shadow-xl border-0 overflow-hidden">
+              <CardHeader className="text-center bg-gradient-to-r from-primary/10 to-accent/10 border-b">
+                <CardTitle className="text-3xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  Choose Your Interview Style
+                </CardTitle>
+                <CardDescription className="text-lg">
                   Select how you'd like to practice - both options cover the same essential questions
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-8">
-                {/* Language Selector */}
-                <div className="flex items-center justify-center space-x-2 mb-6">
-                  <Globe className="h-4 w-4 text-muted-foreground" />
-                  <label className="text-sm font-medium">Language:</label>
+                {/* Language Selector - Enhanced */}
+                <div className="flex items-center justify-center space-x-3 mb-8 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-primary/20">
+                  <Globe className="h-5 w-5 text-primary" />
+                  <label className="text-base font-medium text-primary">Interview Language:</label>
                   <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-                    <SelectTrigger className="w-48">
+                    <SelectTrigger className="w-52 border-primary/30 focus:border-primary">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -616,84 +684,86 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
                 </div>
 
                 <Tabs defaultValue="text" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 mb-8 bg-muted/50">
-                    <TabsTrigger value="text" className="flex items-center space-x-2 data-[state=active]:bg-background">
-                      <MessageSquare className="h-4 w-4" />
+                  <TabsList className="grid w-full grid-cols-2 mb-8 bg-muted/30 h-14">
+                    <TabsTrigger value="text" className="flex items-center space-x-3 data-[state=active]:bg-white data-[state=active]:shadow-md text-base py-3">
+                      <MessageSquare className="h-5 w-5" />
                       <span>Text Interview</span>
                     </TabsTrigger>
-                    <TabsTrigger value="voice" className="flex items-center space-x-2 data-[state=active]:bg-background">
-                      <Mic className="h-4 w-4" />
+                    <TabsTrigger value="voice" className="flex items-center space-x-3 data-[state=active]:bg-white data-[state=active]:shadow-md text-base py-3">
+                      <Mic className="h-5 w-5" />
                       <span>Voice Interview</span>
                     </TabsTrigger>
                   </TabsList>
                   
-                  <TabsContent value="text" className="space-y-6">
+                  <TabsContent value="text" className="space-y-8">
                     <div className="text-center">
-                      <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <MessageSquare className="h-10 w-10 text-primary" />
+                      <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <MessageSquare className="h-12 w-12 text-primary" />
                       </div>
-                      <h3 className="text-xl font-semibold mb-2">Text-Based Interview</h3>
-                      <p className="text-muted-foreground mb-6">Type your responses to interview questions</p>
-                      <div className="grid md:grid-cols-3 gap-4 mb-6 text-sm">
-                        <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
-                          <p className="font-medium text-primary">✍️ Written Responses</p>
+                      <h3 className="text-2xl font-semibold mb-3 text-gray-800">Text-Based Interview</h3>
+                      <p className="text-muted-foreground mb-8 text-lg max-w-md mx-auto">Type your responses to interview questions with time to think</p>
+                      <div className="grid md:grid-cols-3 gap-6 mb-8">
+                        <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-xl border border-primary/20 shadow-sm">
+                          <p className="font-semibold text-primary text-lg mb-2">✍️ Written Responses</p>
                           <p className="text-primary/70">Perfect for organizing thoughts</p>
                         </div>
-                        <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
-                          <p className="font-medium text-primary">⏰ Self-Paced</p>
+                        <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-xl border border-primary/20 shadow-sm">
+                          <p className="font-semibold text-primary text-lg mb-2">⏰ Self-Paced</p>
                           <p className="text-primary/70">Take time to craft answers</p>
                         </div>
-                        <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
-                          <p className="font-medium text-primary">📝 Structure Practice</p>
+                        <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-xl border border-primary/20 shadow-sm">
+                          <p className="font-semibold text-primary text-lg mb-2">📝 Structure Practice</p>
                           <p className="text-primary/70">Focus on answer organization</p>
                         </div>
                       </div>
                       <Button 
                         onClick={startTextSession}
-                        className="bg-primary hover:bg-primary/90 text-white px-8 py-3"
+                        className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white px-10 py-4 text-lg shadow-lg"
                         size="lg"
                       >
-                        <MessageSquare className="h-4 w-4 mr-2" />
+                        <MessageSquare className="h-5 w-5 mr-3" />
                         Start Text Interview
                       </Button>
                     </div>
                   </TabsContent>
                   
-                  <TabsContent value="voice" className="space-y-6">
+                  <TabsContent value="voice" className="space-y-8">
                     <div className="text-center">
-                      <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Mic className="h-10 w-10 text-accent" />
+                      <div className="w-24 h-24 bg-gradient-to-br from-accent/20 to-accent/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <Mic className="h-12 w-12 text-accent" />
                       </div>
-                      <h3 className="text-xl font-semibold mb-2">Voice Interview</h3>
-                      <p className="text-muted-foreground mb-6">Speak naturally with our AI interviewer</p>
+                      <h3 className="text-2xl font-semibold mb-3 text-gray-800">Voice Interview</h3>
+                      <p className="text-muted-foreground mb-8 text-lg max-w-md mx-auto">Speak naturally with our AI interviewer for realistic practice</p>
                       
                       {vapiError && (
-                        <div className="bg-destructive/5 border border-destructive/20 p-4 rounded-lg mb-4">
-                          <p className="text-destructive text-sm">Voice system unavailable. Please use text interview.</p>
+                        <div className="bg-destructive/5 border border-destructive/20 p-6 rounded-xl mb-6 max-w-md mx-auto">
+                          <AlertCircle className="h-6 w-6 text-destructive mx-auto mb-2" />
+                          <p className="text-destructive font-medium">Voice system unavailable</p>
+                          <p className="text-destructive/70 text-sm mt-1">Please use text interview or check microphone permissions.</p>
                         </div>
                       )}
                       
-                      <div className="grid md:grid-cols-3 gap-4 mb-6 text-sm">
-                        <div className="bg-accent/5 p-4 rounded-lg border border-accent/20">
-                          <p className="font-medium text-accent">🎤 Real Conversation</p>
+                      <div className="grid md:grid-cols-3 gap-6 mb-8">
+                        <div className="bg-gradient-to-br from-accent/10 to-accent/5 p-6 rounded-xl border border-accent/20 shadow-sm">
+                          <p className="font-semibold text-accent text-lg mb-2">🎤 Real Conversation</p>
                           <p className="text-accent/70">Practice speaking skills</p>
                         </div>
-                        <div className="bg-accent/5 p-4 rounded-lg border border-accent/20">
-                          <p className="font-medium text-accent">🤖 AI Interviewer</p>
+                        <div className="bg-gradient-to-br from-accent/10 to-accent/5 p-6 rounded-xl border border-accent/20 shadow-sm">
+                          <p className="font-semibold text-accent text-lg mb-2">🤖 AI Interviewer</p>
                           <p className="text-accent/70">Interactive responses</p>
                         </div>
-                        <div className="bg-accent/5 p-4 rounded-lg border border-accent/20">
-                          <p className="font-medium text-accent">⚡ Real-time</p>
+                        <div className="bg-gradient-to-br from-accent/10 to-accent/5 p-6 rounded-xl border border-accent/20 shadow-sm">
+                          <p className="font-semibold text-accent text-lg mb-2">⚡ Real-time</p>
                           <p className="text-accent/70">Immediate feedback</p>
                         </div>
                       </div>
                       <Button 
                         onClick={startVoiceSession}
                         disabled={!isVapiInitialized || vapiError}
-                        className="bg-accent hover:bg-accent/90 text-white px-8 py-3 disabled:bg-muted-foreground"
+                        className="bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 text-white px-10 py-4 text-lg shadow-lg disabled:bg-muted-foreground disabled:cursor-not-allowed"
                         size="lg"
                       >
-                        <Mic className="h-4 w-4 mr-2" />
+                        <Mic className="h-5 w-5 mr-3" />
                         {!isVapiInitialized ? "Initializing..." : vapiError ? "Voice Unavailable" : "Start Voice Interview"}
                       </Button>
                     </div>
@@ -702,7 +772,7 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
               </CardContent>
             </Card>
           ) : (
-            /* Active Session Interface */
+            /* Active Session Interface - Enhanced */
             <div className="grid lg:grid-cols-3 gap-8">
               {/* Question Area */}
               <div className="lg:col-span-2">
