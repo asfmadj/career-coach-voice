@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -73,10 +72,42 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
 
         vapiInstance.on("message", (message: any) => {
           console.log("Vapi message:", message);
-          if (message.type === "transcript" && message.transcript && message.role === "user") {
-            const newVoiceAnswers = [...voiceAnswers];
-            newVoiceAnswers[currentQuestionIndex] = message.transcript;
-            setVoiceAnswers(newVoiceAnswers);
+          
+          if (message.type === "transcript" && message.transcript) {
+            if (message.role === "user") {
+              // User spoke - store their answer
+              const newVoiceAnswers = [...voiceAnswers];
+              newVoiceAnswers[currentQuestionIndex] = message.transcript;
+              setVoiceAnswers(newVoiceAnswers);
+            } else if (message.role === "assistant") {
+              // AI spoke - check if it's moving to next question or ending
+              const transcript = message.transcript.toLowerCase();
+              
+              // Check if AI is ending the interview
+              if (transcript.includes("thank you") && transcript.includes("interview") && 
+                  (transcript.includes("complete") || transcript.includes("end") || transcript.includes("conclude"))) {
+                console.log("AI is ending the interview");
+                setTimeout(() => {
+                  if (vapi && isCallActive) {
+                    vapi.stop();
+                  }
+                }, 2000);
+              }
+              
+              // Check if AI is asking the next question
+              const questionKeywords = ["second question", "next question", "final question", "last question"];
+              const isNextQuestion = questionKeywords.some(keyword => transcript.includes(keyword));
+              
+              if (isNextQuestion && currentQuestionIndex < questions.length - 1) {
+                setCurrentQuestionIndex(prev => prev + 1);
+              }
+            }
+          }
+          
+          // Handle conversation-end or session-complete messages
+          if (message.type === "conversation-end" || message.type === "session-complete") {
+            console.log("Session completed by AI");
+            setTimeout(() => completeSession(), 1000);
           }
         });
 
@@ -115,7 +146,7 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
     };
   }, []);
 
-  // Timer
+  // Timer - modified to handle voice session completion
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (isActive && timeLeft > 0 && !isCompleted) {
@@ -123,12 +154,17 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
         setTimeLeft(time => time - 1);
       }, 1000);
     } else if (timeLeft === 0 && !isCompleted) {
-      completeSession();
+      // Time is up - end the session
+      if (sessionType === "voice" && vapi && isCallActive) {
+        vapi.stop();
+      } else {
+        completeSession();
+      }
     }
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isActive, timeLeft, isCompleted]);
+  }, [isActive, timeLeft, isCompleted, sessionType, vapi, isCallActive]);
 
   const startTextSession = () => {
     setIsActive(true);
@@ -167,20 +203,35 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
           messages: [
             {
               role: "system" as const,
-              content: `You are conducting a quick 5-minute interview for ${interviewConfig.industry}. Ask these questions one by one and listen to responses:
-              1. Tell me about yourself and your background.
-              2. Why are you interested in this position?
-              3. What's your greatest professional strength?
-              
-              Keep responses brief and move to the next question after each answer. End after 5 minutes.`
+              content: `You are conducting a quick 5-minute interview for ${interviewConfig.industry}. You must ask these 3 questions in order:
+
+              1. "Tell me about yourself and your background."
+              2. "Why are you interested in this position?"  
+              3. "What's your greatest professional strength?"
+
+              IMPORTANT INSTRUCTIONS:
+              - Ask ONE question at a time
+              - Wait for the user's complete response before moving to the next question
+              - After each answer, acknowledge briefly and then say "Moving to the [second/final] question:"
+              - After the third question is answered, say "Thank you for completing this interview. This concludes our session."
+              - Keep your responses brief (under 30 words)
+              - Do not ask follow-up questions - stick to the 3 main questions only
+              - The entire interview should take about 5 minutes`
             }
-          ]
+          ],
+          temperature: 0.7,
+          maxTokens: 100
         },
         voice: {
           provider: "11labs" as const,
           voiceId: "21m00Tcm4TlvDq8ikWAM"
         },
         firstMessage: "Hello! Welcome to your 5-minute quick interview. Let's start with the first question: Tell me about yourself and your background.",
+        transcriber: {
+          provider: "deepgram" as const,
+          model: "nova-2" as const,
+          language: "en-US" as const
+        }
       };
 
       await vapi.start(assistantConfig);

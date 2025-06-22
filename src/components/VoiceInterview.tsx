@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -80,8 +79,43 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
 
         vapiInstance.on("message", (message: any) => {
           console.log("Vapi message:", message);
+          
           if (message.type === "transcript" && message.transcript) {
             setConversationMessages(prev => [...prev, `${message.role}: ${message.transcript}`]);
+            
+            // Check if AI is concluding the interview
+            if (message.role === "assistant") {
+              const transcript = message.transcript.toLowerCase();
+              const conclusionKeywords = [
+                "thank you for your time",
+                "this concludes our interview",
+                "we've reached the end",
+                "interview is complete",
+                "thank you for joining us today"
+              ];
+              
+              const isConclusion = conclusionKeywords.some(keyword => 
+                transcript.includes(keyword)
+              );
+              
+              if (isConclusion) {
+                console.log("AI is concluding the interview");
+                setTimeout(() => {
+                  if (vapi && isCallActive) {
+                    vapi.stop();
+                  }
+                }, 3000); // Give 3 seconds for the message to finish
+              }
+            }
+          }
+          
+          // Handle conversation-end messages
+          if (message.type === "conversation-end" || message.type === "session-complete") {
+            console.log("Session completed by AI");
+            setTimeout(() => {
+              setIsCallActive(false);
+              onComplete();
+            }, 1000);
           }
         });
 
@@ -120,18 +154,31 @@ export const VoiceInterview = ({ onBack, onComplete, interviewConfig }: VoiceInt
     };
   }, [onComplete, toast]);
 
-  // Timer for call duration
+  // Timer for call duration - modified to handle auto-completion
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isCallActive) {
       interval = setInterval(() => {
-        setCallDuration(prev => prev + 1);
+        setCallDuration(prev => {
+          const newDuration = prev + 1;
+          const maxDurationSeconds = getDurationInMinutes() * 60;
+          
+          // Auto-end call when time limit reached
+          if (newDuration >= maxDurationSeconds) {
+            console.log("Time limit reached, ending call");
+            if (vapi) {
+              vapi.stop();
+            }
+          }
+          
+          return newDuration;
+        });
       }, 1000);
     } else {
       setCallDuration(0);
     }
     return () => clearInterval(interval);
-  }, [isCallActive]);
+  }, [isCallActive, vapi]);
 
   const getDurationInMinutes = () => {
     return parseInt(interviewConfig.duration?.split(' ')[0] || '15');
@@ -177,8 +224,10 @@ Your role:
 - Pace the interview to fit the ${durationMinutes}-minute timeframe
 - Ask questions that test both technical skills and cultural fit
 - Provide encouraging feedback when appropriate
-- After ${durationMinutes-2} minutes, start wrapping up the interview gracefully
-- End with next steps and thank the candidate
+
+IMPORTANT TIMING:
+- After ${Math.max(durationMinutes-2, 1)} minutes, start wrapping up the interview
+- At the end, say "Thank you for your time today. This concludes our interview. We'll be in touch with next steps."
 
 Guidelines:
 - Keep your responses concise but professional (under 50 words)
