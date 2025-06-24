@@ -1,14 +1,14 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Mic, Play, Clock, TrendingUp, Award, Calendar, BarChart3, Phone } from "lucide-react";
+import { ArrowLeft, Mic, Play, Clock, TrendingUp, Award, Calendar, BarChart3, Phone, Palette } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { RandomPractice } from "@/components/RandomPractice";
 import { QuickSession } from "@/components/QuickSession";
 import { SessionReview } from "@/components/SessionReview";
+import { ModernDashboard } from "@/components/ModernDashboard";
 
 interface DashboardProps {
   onBack: () => void;
@@ -25,7 +25,7 @@ interface DashboardProps {
 }
 
 export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview, user, onProfile, interviewConfig }: DashboardProps) => {
-  const [currentView, setCurrentView] = useState<'dashboard' | 'random-practice' | 'quick-session' | 'session-review'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'modern' | 'random-practice' | 'quick-session' | 'session-review'>('dashboard');
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
   const { toast } = useToast();
 
@@ -125,6 +125,19 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
     onStartTextInterview();
   };
 
+  if (currentView === 'modern') {
+    return (
+      <ModernDashboard
+        onBack={() => setCurrentView('dashboard')}
+        onStartVoiceInterview={onStartVoiceInterview}
+        onStartTextInterview={onStartTextInterview}
+        user={user}
+        onProfile={onProfile}
+        interviewConfig={interviewConfig}
+      />
+    );
+  }
+
   if (currentView === 'random-practice') {
     return <RandomPractice onBack={() => setCurrentView('dashboard')} interviewConfig={interviewConfig} />;
   }
@@ -154,6 +167,14 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
             </div>
           </div>
           <div className="flex space-x-2">
+            <Button 
+              onClick={() => setCurrentView('modern')}
+              variant="outline"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0"
+            >
+              <Palette className="h-4 w-4 mr-2" />
+              Modern View
+            </Button>
             <Button 
               onClick={onStartVoiceInterview}
               className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
