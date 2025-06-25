@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -302,8 +301,8 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
               {/* Recommendations */}
               <Card className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-md border border-blue-500/30 hover:from-blue-500/25 hover:to-purple-500/25 transition-all duration-300">
                 <CardHeader>
-                  <CardTitle className="text-white">Recommendations</CardTitle>
-                  <CardDescription className="text-white/90">
+                  <CardTitle className="text-slate-900 font-bold">Recommendations</CardTitle>
+                  <CardDescription className="text-slate-800 font-medium">
                     Based on your recent performance
                   </CardDescription>
                 </CardHeader>
@@ -312,15 +311,15 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
                     className="p-3 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 cursor-pointer hover:bg-white/20 hover:shadow-lg transition-all duration-300" 
                     onClick={handleTechnicalPractice}
                   >
-                    <p className="text-sm font-medium text-white mb-1">Practice Technical Questions</p>
-                    <p className="text-xs text-white/80">Your technical scores could improve with more practice</p>
+                    <p className="text-sm font-medium text-slate-900 mb-1">Practice Technical Questions</p>
+                    <p className="text-xs text-slate-800">Your technical scores could improve with more practice</p>
                   </div>
                   <div 
                     className="p-3 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 cursor-pointer hover:bg-white/20 hover:shadow-lg transition-all duration-300" 
                     onClick={handleResponseStructure}
                   >
-                    <p className="text-sm font-medium text-white mb-1">Work on Response Structure</p>
-                    <p className="text-xs text-white/80">Focus on clear, organized answers using frameworks</p>
+                    <p className="text-sm font-medium text-slate-900 mb-1">Work on Response Structure</p>
+                    <p className="text-xs text-slate-800">Focus on clear, organized answers using frameworks</p>
                   </div>
                 </CardContent>
               </Card>
@@ -328,16 +327,16 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
               {/* Progress Goal */}
               <Card className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-md border border-purple-500/30 hover:from-purple-500/25 hover:to-pink-500/25 transition-all duration-300">
                 <CardHeader>
-                  <CardTitle className="text-white">Weekly Goal</CardTitle>
-                  <CardDescription className="text-white/90">
+                  <CardTitle className="text-slate-900 font-bold">Weekly Goal</CardTitle>
+                  <CardDescription className="text-slate-800 font-medium">
                     5 practice sessions this week
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Progress value={60} className="mb-3 bg-white/20" />
                   <div className="flex justify-between items-center">
-                    <span className="text-white/90 text-sm">3 of 5 completed</span>
-                    <Badge className="bg-purple-500/30 text-purple-200 border-purple-500/40">
+                    <span className="text-slate-900 text-sm font-medium">3 of 5 completed</span>
+                    <Badge className="bg-purple-500/30 text-purple-900 border-purple-500/40 font-semibold">
                       60%
                     </Badge>
                   </div>

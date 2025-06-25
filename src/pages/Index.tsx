@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -292,10 +291,10 @@ const Index = () => {
           <div className="max-w-3xl mx-auto">
             <Card className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 backdrop-blur-md border border-cyan-500/30 hover:from-cyan-500/25 hover:to-blue-500/25 transition-all duration-300">
               <CardContent className="p-12">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">
                   Ready to Ace Your Interview?
                 </h2>
-                <p className="text-xl mb-8 text-white/90">
+                <p className="text-xl mb-8 text-slate-800 font-medium">
                   Join thousands of professionals who have improved their interview skills with Neuro Ask
                 </p>
                 <Button 
