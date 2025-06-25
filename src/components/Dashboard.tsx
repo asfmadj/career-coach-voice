@@ -1,14 +1,14 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Mic, Play, Clock, TrendingUp, Award, Calendar, BarChart3, Phone, Palette } from "lucide-react";
+import { ArrowLeft, Mic, Play, Clock, TrendingUp, Award, Calendar, BarChart3, Phone } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { RandomPractice } from "@/components/RandomPractice";
 import { QuickSession } from "@/components/QuickSession";
 import { SessionReview } from "@/components/SessionReview";
-import { ModernDashboard } from "@/components/ModernDashboard";
 
 interface DashboardProps {
   onBack: () => void;
@@ -25,7 +25,7 @@ interface DashboardProps {
 }
 
 export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview, user, onProfile, interviewConfig }: DashboardProps) => {
-  const [currentView, setCurrentView] = useState<'dashboard' | 'modern' | 'random-practice' | 'quick-session' | 'session-review'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'random-practice' | 'quick-session' | 'session-review'>('dashboard');
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
   const { toast } = useToast();
 
@@ -90,10 +90,10 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
   ];
 
   const stats = [
-    { label: "Total Sessions", value: "24", icon: <Calendar className="h-5 w-5" />, color: "blue" },
-    { label: "Average Score", value: "85%", icon: <TrendingUp className="h-5 w-5" />, color: "green" },
-    { label: "Hours Practiced", value: "12.5", icon: <Clock className="h-5 w-5" />, color: "purple" },
-    { label: "Streak", value: "7 days", icon: <Award className="h-5 w-5" />, color: "orange" }
+    { label: "Total Sessions", value: "24", icon: <Calendar className="h-5 w-5" />, color: "from-blue-500 to-cyan-500" },
+    { label: "Average Score", value: "85%", icon: <TrendingUp className="h-5 w-5" />, color: "from-green-500 to-emerald-500" },
+    { label: "Hours Practiced", value: "12.5", icon: <Clock className="h-5 w-5" />, color: "from-purple-500 to-pink-500" },
+    { label: "Streak", value: "7 days", icon: <Award className="h-5 w-5" />, color: "from-orange-500 to-red-500" }
   ];
 
   const handleRandomPractice = () => {
@@ -125,19 +125,6 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
     onStartTextInterview();
   };
 
-  if (currentView === 'modern') {
-    return (
-      <ModernDashboard
-        onBack={() => setCurrentView('dashboard')}
-        onStartVoiceInterview={onStartVoiceInterview}
-        onStartTextInterview={onStartTextInterview}
-        user={user}
-        onProfile={onProfile}
-        interviewConfig={interviewConfig}
-      />
-    );
-  }
-
   if (currentView === 'random-practice') {
     return <RandomPractice onBack={() => setCurrentView('dashboard')} interviewConfig={interviewConfig} />;
   }
@@ -152,194 +139,215 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="container mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center">
-            <Button variant="ghost" onClick={onBack} className="mr-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold">Interview Dashboard</h1>
-              <p className="text-gray-600">Track your progress and continue practicing</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-1/2 -right-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div className="absolute -bottom-1/2 -left-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-cyan-500/5 rounded-full blur-2xl animate-float"></div>
+      </div>
+
+      <div className="relative z-10">
+        <div className="container mx-auto px-6 py-8">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center">
+              <Button 
+                variant="ghost" 
+                onClick={onBack} 
+                className="mr-4 text-white/80 hover:text-white hover:bg-white/10 backdrop-blur-sm border border-white/10"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold text-white mb-2">Interview Dashboard</h1>
+                <p className="text-white/70">Track your progress and continue practicing</p>
+              </div>
+            </div>
+            <div className="flex space-x-3">
+              <Button 
+                onClick={onStartVoiceInterview}
+                className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white border-0 shadow-lg backdrop-blur-sm"
+              >
+                <Phone className="h-4 w-4 mr-2" />
+                Voice Interview
+              </Button>
+              <Button 
+                onClick={onStartTextInterview}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0 shadow-lg backdrop-blur-sm"
+              >
+                <Mic className="h-4 w-4 mr-2" />
+                Text Interview
+              </Button>
             </div>
           </div>
-          <div className="flex space-x-2">
-            <Button 
-              onClick={() => setCurrentView('modern')}
-              variant="outline"
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0"
-            >
-              <Palette className="h-4 w-4 mr-2" />
-              Modern View
-            </Button>
-            <Button 
-              onClick={onStartVoiceInterview}
-              className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
-            >
-              <Phone className="h-4 w-4 mr-2" />
-              Voice Interview
-            </Button>
-            <Button 
-              onClick={onStartTextInterview}
-              variant="outline"
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0"
-            >
-              <Mic className="h-4 w-4 mr-2" />
-              Text Interview
-            </Button>
-          </div>
-        </div>
 
-        {/* Stats Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow duration-200">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
-                    <p className="text-2xl font-bold">{stat.value}</p>
+          {/* Stats Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {stats.map((stat, index) => (
+              <Card key={index} className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-white/70 text-sm mb-1">{stat.label}</p>
+                      <p className="text-2xl font-bold text-white">{stat.value}</p>
+                    </div>
+                    <div className={`p-3 rounded-xl bg-gradient-to-r ${stat.color} shadow-lg`}>
+                      <div className="text-white">
+                        {stat.icon}
+                      </div>
+                    </div>
                   </div>
-                  <div className={`p-3 rounded-full bg-${stat.color}-100 text-${stat.color}-600`}>
-                    {stat.icon}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Recent Sessions */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <BarChart3 className="h-5 w-5 mr-2" />
-                  Recent Practice Sessions
-                </CardTitle>
-                <CardDescription>
-                  Your latest interview practice sessions and feedback
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentSessions.map((session) => (
-                    <Card key={session.id} className="border border-gray-200 hover:shadow-md transition-shadow duration-200">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center space-x-3">
-                            <Badge variant="outline">{session.type}</Badge>
-                            <span className="text-sm text-gray-600">{session.industry}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Clock className="h-4 w-4 text-gray-400" />
-                            <span className="text-sm text-gray-600">{session.duration}</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium">Performance Score</span>
-                          <span className="text-sm font-bold text-blue-600">{session.score}%</span>
-                        </div>
-                        <Progress value={session.score} className="mb-3" />
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm text-gray-600">{session.feedback}</p>
-                          <Button variant="ghost" size="sm" onClick={() => handleSessionReview(session.id)}>
-                            <Play className="h-4 w-4 mr-1" />
-                            Review
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            ))}
           </div>
 
-          {/* Quick Actions & Recommendations */}
-          <div className="space-y-6">
-            {/* Quick Start */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Start</CardTitle>
-                <CardDescription>
-                  Jump into a practice session
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button 
-                  onClick={onStartVoiceInterview}
-                  className="w-full justify-start bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
-                >
-                  <Phone className="h-4 w-4 mr-2" />
-                  Start Voice Interview
-                </Button>
-                <Button 
-                  onClick={onStartTextInterview}
-                  className="w-full justify-start" 
-                  variant="outline"
-                >
-                  <Mic className="h-4 w-4 mr-2" />
-                  Start Text Interview
-                </Button>
-                <Button 
-                  onClick={handleRandomPractice}
-                  className="w-full justify-start" 
-                  variant="outline"
-                >
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Random Practice Question
-                </Button>
-                <Button 
-                  onClick={handleQuickSession}
-                  className="w-full justify-start" 
-                  variant="outline"
-                >
-                  <Clock className="h-4 w-4 mr-2" />
-                  5-Minute Quick Session
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Recommendations */}
-            <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200">
-              <CardHeader>
-                <CardTitle className="text-blue-800">Recommendations</CardTitle>
-                <CardDescription className="text-blue-600">
-                  Based on your recent performance
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="p-3 bg-white rounded-lg border border-blue-200 cursor-pointer hover:shadow-md transition-shadow" onClick={handleTechnicalPractice}>
-                    <p className="text-sm font-medium text-blue-800 mb-1">Practice Technical Questions</p>
-                    <p className="text-xs text-blue-600">Your technical scores could improve with more practice</p>
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Recent Sessions */}
+            <div className="lg:col-span-2">
+              <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-white">
+                    <BarChart3 className="h-5 w-5 mr-2" />
+                    Recent Practice Sessions
+                  </CardTitle>
+                  <CardDescription className="text-white/70">
+                    Your latest interview practice sessions and feedback
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {recentSessions.map((session) => (
+                      <Card key={session.id} className="bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 hover:shadow-xl transition-all duration-300">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center space-x-3">
+                              <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 backdrop-blur-sm">
+                                {session.type}
+                              </Badge>
+                              <span className="text-sm text-white/70">{session.industry}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Clock className="h-4 w-4 text-white/60" />
+                              <span className="text-sm text-white/70">{session.duration}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-white/80">Performance Score</span>
+                            <span className="text-sm font-bold text-blue-400">{session.score}%</span>
+                          </div>
+                          <Progress value={session.score} className="mb-3 bg-white/20" />
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm text-white/70 flex-1 mr-4">{session.feedback}</p>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleSessionReview(session.id)}
+                              className="text-white/80 hover:text-white hover:bg-white/10 backdrop-blur-sm"
+                            >
+                              <Play className="h-4 w-4 mr-1" />
+                              Review
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
-                  <div className="p-3 bg-white rounded-lg border border-blue-200 cursor-pointer hover:shadow-md transition-shadow" onClick={handleResponseStructure}>
-                    <p className="text-sm font-medium text-blue-800 mb-1">Work on Response Structure</p>
-                    <p className="text-xs text-blue-600">Focus on clear, organized answers using frameworks</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
 
-            {/* Progress Goal */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Weekly Goal</CardTitle>
-                <CardDescription>
-                  5 practice sessions this week
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Progress value={60} className="mb-2" />
-                <p className="text-sm text-gray-600">3 of 5 sessions completed</p>
-              </CardContent>
-            </Card>
+            {/* Quick Actions & Recommendations */}
+            <div className="space-y-6">
+              {/* Quick Start */}
+              <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300">
+                <CardHeader>
+                  <CardTitle className="text-white">Quick Start</CardTitle>
+                  <CardDescription className="text-white/70">
+                    Jump into a practice session
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button 
+                    onClick={onStartVoiceInterview}
+                    className="w-full justify-start bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white border-0 shadow-lg backdrop-blur-sm"
+                  >
+                    <Phone className="h-4 w-4 mr-2" />
+                    Start Voice Interview
+                  </Button>
+                  <Button 
+                    onClick={onStartTextInterview}
+                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm"
+                  >
+                    <Mic className="h-4 w-4 mr-2" />
+                    Start Text Interview
+                  </Button>
+                  <Button 
+                    onClick={handleRandomPractice}
+                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm"
+                  >
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Random Practice Question
+                  </Button>
+                  <Button 
+                    onClick={handleQuickSession}
+                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm"
+                  >
+                    <Clock className="h-4 w-4 mr-2" />
+                    5-Minute Quick Session
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Recommendations */}
+              <Card className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-md border border-blue-500/30 hover:from-blue-500/25 hover:to-purple-500/25 transition-all duration-300">
+                <CardHeader>
+                  <CardTitle className="text-white">Recommendations</CardTitle>
+                  <CardDescription className="text-white/80">
+                    Based on your recent performance
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div 
+                      className="p-3 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 cursor-pointer hover:bg-white/20 hover:shadow-lg transition-all duration-300" 
+                      onClick={handleTechnicalPractice}
+                    >
+                      <p className="text-sm font-medium text-white mb-1">Practice Technical Questions</p>
+                      <p className="text-xs text-white/70">Your technical scores could improve with more practice</p>
+                    </div>
+                    <div 
+                      className="p-3 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 cursor-pointer hover:bg-white/20 hover:shadow-lg transition-all duration-300" 
+                      onClick={handleResponseStructure}
+                    >
+                      <p className="text-sm font-medium text-white mb-1">Work on Response Structure</p>
+                      <p className="text-xs text-white/70">Focus on clear, organized answers using frameworks</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Progress Goal */}
+              <Card className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-md border border-purple-500/30 hover:from-purple-500/25 hover:to-pink-500/25 transition-all duration-300">
+                <CardHeader>
+                  <CardTitle className="text-white">Weekly Goal</CardTitle>
+                  <CardDescription className="text-white/80">
+                    5 practice sessions this week
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Progress value={60} className="mb-3 bg-white/20" />
+                  <div className="flex justify-between items-center">
+                    <span className="text-white/80 text-sm">3 of 5 completed</span>
+                    <Badge className="bg-purple-500/30 text-purple-200 border-purple-500/40">
+                      60%
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
