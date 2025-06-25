@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -148,7 +147,7 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
       </div>
 
       <div className="relative z-10">
-        <div className="container mx-auto px-6 py-8">
+        <div className="container mx-auto px-6 py-8 max-w-7xl">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center">
@@ -217,49 +216,47 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
                     Your latest interview practice sessions and feedback
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {recentSessions.map((session) => (
-                      <Card key={session.id} className="bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 hover:shadow-xl transition-all duration-300">
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center space-x-3">
-                              <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 backdrop-blur-sm">
-                                {session.type}
-                              </Badge>
-                              <span className="text-sm text-white/70">{session.industry}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Clock className="h-4 w-4 text-white/60" />
-                              <span className="text-sm text-white/70">{session.duration}</span>
-                            </div>
+                <CardContent className="space-y-4">
+                  {recentSessions.map((session) => (
+                    <Card key={session.id} className="bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 hover:shadow-xl transition-all duration-300">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center space-x-3">
+                            <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 backdrop-blur-sm">
+                              {session.type}
+                            </Badge>
+                            <span className="text-sm text-white/70">{session.industry}</span>
                           </div>
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-white/80">Performance Score</span>
-                            <span className="text-sm font-bold text-blue-400">{session.score}%</span>
+                          <div className="flex items-center space-x-2">
+                            <Clock className="h-4 w-4 text-white/60" />
+                            <span className="text-sm text-white/70">{session.duration}</span>
                           </div>
-                          <Progress value={session.score} className="mb-3 bg-white/20" />
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm text-white/70 flex-1 mr-4">{session.feedback}</p>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => handleSessionReview(session.id)}
-                              className="text-white/80 hover:text-white hover:bg-white/10 backdrop-blur-sm"
-                            >
-                              <Play className="h-4 w-4 mr-1" />
-                              Review
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                        </div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-white/80">Performance Score</span>
+                          <span className="text-sm font-bold text-blue-400">{session.score}%</span>
+                        </div>
+                        <Progress value={session.score} className="mb-3 bg-white/20" />
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-white/70 flex-1 mr-4">{session.feedback}</p>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleSessionReview(session.id)}
+                            className="text-white/80 hover:text-white hover:bg-white/10 backdrop-blur-sm"
+                          >
+                            <Play className="h-4 w-4 mr-1" />
+                            Review
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </CardContent>
               </Card>
             </div>
 
-            {/* Quick Actions & Recommendations */}
+            {/* Sidebar - Quick Actions & Recommendations */}
             <div className="space-y-6">
               {/* Quick Start */}
               <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300">
@@ -309,22 +306,20 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
                     Based on your recent performance
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div 
-                      className="p-3 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 cursor-pointer hover:bg-white/20 hover:shadow-lg transition-all duration-300" 
-                      onClick={handleTechnicalPractice}
-                    >
-                      <p className="text-sm font-medium text-white mb-1">Practice Technical Questions</p>
-                      <p className="text-xs text-white/70">Your technical scores could improve with more practice</p>
-                    </div>
-                    <div 
-                      className="p-3 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 cursor-pointer hover:bg-white/20 hover:shadow-lg transition-all duration-300" 
-                      onClick={handleResponseStructure}
-                    >
-                      <p className="text-sm font-medium text-white mb-1">Work on Response Structure</p>
-                      <p className="text-xs text-white/70">Focus on clear, organized answers using frameworks</p>
-                    </div>
+                <CardContent className="space-y-3">
+                  <div 
+                    className="p-3 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 cursor-pointer hover:bg-white/20 hover:shadow-lg transition-all duration-300" 
+                    onClick={handleTechnicalPractice}
+                  >
+                    <p className="text-sm font-medium text-white mb-1">Practice Technical Questions</p>
+                    <p className="text-xs text-white/70">Your technical scores could improve with more practice</p>
+                  </div>
+                  <div 
+                    className="p-3 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 cursor-pointer hover:bg-white/20 hover:shadow-lg transition-all duration-300" 
+                    onClick={handleResponseStructure}
+                  >
+                    <p className="text-sm font-medium text-white mb-1">Work on Response Structure</p>
+                    <p className="text-xs text-white/70">Focus on clear, organized answers using frameworks</p>
                   </div>
                 </CardContent>
               </Card>
