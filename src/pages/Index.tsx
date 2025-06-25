@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -77,14 +78,12 @@ const Index = () => {
 
   const handleGetStarted = () => {
     if (user) {
-      // User is logged in, go to dashboard or setup based on whether they have interview config
       if (interviewConfig.industry) {
         setCurrentView('dashboard');
       } else {
         setCurrentView('setup');
       }
     } else {
-      // User is not logged in, go to sign in first
       setCurrentView('signin');
     }
   };
@@ -170,7 +169,7 @@ const Index = () => {
                   <Button 
                     variant="ghost" 
                     onClick={() => setCurrentView('profile')}
-                    className="text-white/80 hover:text-white hover:bg-white/10 backdrop-blur-sm border border-white/10"
+                    className="text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm border border-white/10"
                   >
                     {user.name || user.email}
                   </Button>
@@ -186,7 +185,7 @@ const Index = () => {
                   <Button 
                     variant="ghost" 
                     onClick={() => setCurrentView('signin')}
-                    className="text-white/80 hover:text-white hover:bg-white/10 backdrop-blur-sm border border-white/10"
+                    className="text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm border border-white/10"
                   >
                     Sign In
                   </Button>
@@ -205,14 +204,14 @@ const Index = () => {
         {/* Hero Section */}
         <section className="container mx-auto px-6 py-20 text-center">
           <div className="max-w-4xl mx-auto">
-            <Badge className="mb-6 bg-cyan-500/20 text-cyan-300 border-cyan-500/30 backdrop-blur-sm hover:bg-cyan-500/25">
+            <Badge className="mb-6 bg-cyan-500/20 text-cyan-200 border-cyan-500/30 backdrop-blur-sm hover:bg-cyan-500/25">
               <Zap className="h-4 w-4 mr-1" />
               AI-Powered Interview Practice
             </Badge>
             <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent">
               Master Your Next Interview with Neuro Ask
             </h1>
-            <p className="text-xl text-white/70 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
               Practice with our intelligent AI interviewer, get instant feedback, and boost your confidence with personalized interview preparation.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -241,7 +240,7 @@ const Index = () => {
         <section className="container mx-auto px-6 py-20">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">Why Choose Neuro Ask?</h2>
-            <p className="text-lg text-white/70 max-w-2xl mx-auto">
+            <p className="text-lg text-white/80 max-w-2xl mx-auto">
               Our AI-powered platform provides everything you need to excel in your next interview
             </p>
           </div>
@@ -255,7 +254,7 @@ const Index = () => {
                   <CardTitle className="text-xl text-white">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="text-center text-white/70">
+                  <CardDescription className="text-center text-white/80">
                     {feature.description}
                   </CardDescription>
                 </CardContent>
@@ -270,7 +269,7 @@ const Index = () => {
             <CardContent className="p-12">
               <div className="text-center mb-12">
                 <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">Practice for Any Industry</h2>
-                <p className="text-lg text-white/70">
+                <p className="text-lg text-white/80">
                   Tailored interview questions for your specific field and career level
                 </p>
               </div>
@@ -278,7 +277,7 @@ const Index = () => {
                 {industries.map((industry, index) => (
                   <Badge 
                     key={index} 
-                    className="px-4 py-2 text-sm bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 border-cyan-500/30 hover:from-cyan-500/30 hover:to-blue-500/30 cursor-pointer transition-all duration-200 backdrop-blur-sm"
+                    className="px-4 py-2 text-sm bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-200 border-cyan-500/30 hover:from-cyan-500/30 hover:to-blue-500/30 cursor-pointer transition-all duration-200 backdrop-blur-sm"
                   >
                     {industry}
                   </Badge>
@@ -296,7 +295,7 @@ const Index = () => {
                 <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
                   Ready to Ace Your Interview?
                 </h2>
-                <p className="text-xl mb-8 text-white/80">
+                <p className="text-xl mb-8 text-white/90">
                   Join thousands of professionals who have improved their interview skills with Neuro Ask
                 </p>
                 <Button 
@@ -319,7 +318,7 @@ const Index = () => {
               <div className="w-6 h-6 bg-gradient-to-r from-cyan-400 to-blue-500 rounded"></div>
               <span className="font-semibold text-white">Neuro Ask</span>
             </div>
-            <p className="text-white/60 text-sm">
+            <p className="text-white/70 text-sm">
               © 2024 Neuro Ask. Empowering careers through AI-powered practice.
             </p>
           </div>

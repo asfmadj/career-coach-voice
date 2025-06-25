@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -154,14 +155,14 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
               <Button 
                 variant="ghost" 
                 onClick={onBack} 
-                className="mr-4 text-white/80 hover:text-white hover:bg-white/10 backdrop-blur-sm border border-white/10"
+                className="mr-4 text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm border border-white/10"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back
               </Button>
               <div>
                 <h1 className="text-3xl font-bold text-white mb-2">Interview Dashboard</h1>
-                <p className="text-white/70">Track your progress and continue practicing</p>
+                <p className="text-white/80">Track your progress and continue practicing</p>
               </div>
             </div>
             <div className="flex space-x-3">
@@ -189,7 +190,7 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-white/70 text-sm mb-1">{stat.label}</p>
+                      <p className="text-white/80 text-sm mb-1">{stat.label}</p>
                       <p className="text-2xl font-bold text-white">{stat.value}</p>
                     </div>
                     <div className={`p-3 rounded-xl bg-gradient-to-r ${stat.color} shadow-lg`}>
@@ -212,7 +213,7 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
                     <BarChart3 className="h-5 w-5 mr-2" />
                     Recent Practice Sessions
                   </CardTitle>
-                  <CardDescription className="text-white/70">
+                  <CardDescription className="text-white/80">
                     Your latest interview practice sessions and feedback
                   </CardDescription>
                 </CardHeader>
@@ -222,28 +223,28 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center space-x-3">
-                            <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 backdrop-blur-sm">
+                            <Badge className="bg-blue-500/20 text-blue-200 border-blue-500/30 backdrop-blur-sm">
                               {session.type}
                             </Badge>
-                            <span className="text-sm text-white/70">{session.industry}</span>
+                            <span className="text-sm text-white/80">{session.industry}</span>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <Clock className="h-4 w-4 text-white/60" />
-                            <span className="text-sm text-white/70">{session.duration}</span>
+                            <Clock className="h-4 w-4 text-white/70" />
+                            <span className="text-sm text-white/80">{session.duration}</span>
                           </div>
                         </div>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-white/80">Performance Score</span>
-                          <span className="text-sm font-bold text-blue-400">{session.score}%</span>
+                          <span className="text-sm font-medium text-white/90">Performance Score</span>
+                          <span className="text-sm font-bold text-blue-300">{session.score}%</span>
                         </div>
                         <Progress value={session.score} className="mb-3 bg-white/20" />
                         <div className="flex items-center justify-between">
-                          <p className="text-sm text-white/70 flex-1 mr-4">{session.feedback}</p>
+                          <p className="text-sm text-white/80 flex-1 mr-4">{session.feedback}</p>
                           <Button 
                             variant="ghost" 
                             size="sm" 
                             onClick={() => handleSessionReview(session.id)}
-                            className="text-white/80 hover:text-white hover:bg-white/10 backdrop-blur-sm"
+                            className="text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm"
                           >
                             <Play className="h-4 w-4 mr-1" />
                             Review
@@ -262,7 +263,7 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
               <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="text-white">Quick Start</CardTitle>
-                  <CardDescription className="text-white/70">
+                  <CardDescription className="text-white/80">
                     Jump into a practice session
                   </CardDescription>
                 </CardHeader>
@@ -302,7 +303,7 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
               <Card className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-md border border-blue-500/30 hover:from-blue-500/25 hover:to-purple-500/25 transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="text-white">Recommendations</CardTitle>
-                  <CardDescription className="text-white/80">
+                  <CardDescription className="text-white/90">
                     Based on your recent performance
                   </CardDescription>
                 </CardHeader>
@@ -312,14 +313,14 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
                     onClick={handleTechnicalPractice}
                   >
                     <p className="text-sm font-medium text-white mb-1">Practice Technical Questions</p>
-                    <p className="text-xs text-white/70">Your technical scores could improve with more practice</p>
+                    <p className="text-xs text-white/80">Your technical scores could improve with more practice</p>
                   </div>
                   <div 
                     className="p-3 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 cursor-pointer hover:bg-white/20 hover:shadow-lg transition-all duration-300" 
                     onClick={handleResponseStructure}
                   >
                     <p className="text-sm font-medium text-white mb-1">Work on Response Structure</p>
-                    <p className="text-xs text-white/70">Focus on clear, organized answers using frameworks</p>
+                    <p className="text-xs text-white/80">Focus on clear, organized answers using frameworks</p>
                   </div>
                 </CardContent>
               </Card>
@@ -328,14 +329,14 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
               <Card className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-md border border-purple-500/30 hover:from-purple-500/25 hover:to-pink-500/25 transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="text-white">Weekly Goal</CardTitle>
-                  <CardDescription className="text-white/80">
+                  <CardDescription className="text-white/90">
                     5 practice sessions this week
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Progress value={60} className="mb-3 bg-white/20" />
                   <div className="flex justify-between items-center">
-                    <span className="text-white/80 text-sm">3 of 5 completed</span>
+                    <span className="text-white/90 text-sm">3 of 5 completed</span>
                     <Badge className="bg-purple-500/30 text-purple-200 border-purple-500/40">
                       60%
                     </Badge>
