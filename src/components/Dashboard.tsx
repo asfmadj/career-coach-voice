@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -138,7 +139,7 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black relative overflow-hidden page-enter">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-1/2 -right-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
@@ -149,7 +150,7 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
       <div className="relative z-10">
         <div className="container mx-auto px-6 py-8 max-w-7xl">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-8 fade-in">
             <div className="flex items-center">
               <Button 
                 variant="ghost" 
@@ -160,8 +161,8 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
                 Back
               </Button>
               <div>
-                <h1 className="text-3xl font-bold text-white mb-2">Interview Dashboard</h1>
-                <p className="text-white/80">Track your progress and continue practicing</p>
+                <h1 className="text-3xl font-bold text-white mb-2 text-reveal">Interview Dashboard</h1>
+                <p className="text-white/80 text-reveal">Track your progress and continue practicing</p>
               </div>
             </div>
             <div className="flex space-x-3">
@@ -185,7 +186,7 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
           {/* Stats Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {stats.map((stat, index) => (
-              <Card key={index} className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+              <Card key={index} className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:shadow-2xl card-entrance">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -206,7 +207,7 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Recent Sessions */}
             <div className="lg:col-span-2">
-              <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300">
+              <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 slide-up">
                 <CardHeader>
                   <CardTitle className="flex items-center text-white">
                     <BarChart3 className="h-5 w-5 mr-2" />
@@ -218,7 +219,7 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {recentSessions.map((session) => (
-                    <Card key={session.id} className="bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 hover:shadow-xl transition-all duration-300">
+                    <Card key={session.id} className="bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 hover:shadow-xl transition-all duration-300 fade-in">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center space-x-3">
@@ -259,7 +260,7 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
             {/* Sidebar - Quick Actions & Recommendations */}
             <div className="space-y-6">
               {/* Quick Start */}
-              <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300">
+              <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 slide-up">
                 <CardHeader>
                   <CardTitle className="text-white">Quick Start</CardTitle>
                   <CardDescription className="text-white/80">
@@ -299,10 +300,10 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
               </Card>
 
               {/* Recommendations */}
-              <Card className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-md border border-blue-500/30 hover:from-blue-500/25 hover:to-purple-500/25 transition-all duration-300">
+              <Card className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-md border border-blue-500/30 hover:from-blue-500/25 hover:to-purple-500/25 transition-all duration-300 slide-up">
                 <CardHeader>
-                  <CardTitle className="text-slate-900 font-bold">Recommendations</CardTitle>
-                  <CardDescription className="text-slate-800 font-medium">
+                  <CardTitle className="text-white font-bold">Recommendations</CardTitle>
+                  <CardDescription className="text-white/90 font-medium">
                     Based on your recent performance
                   </CardDescription>
                 </CardHeader>
@@ -311,32 +312,32 @@ export const Dashboard = ({ onBack, onStartVoiceInterview, onStartTextInterview,
                     className="p-3 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 cursor-pointer hover:bg-white/20 hover:shadow-lg transition-all duration-300" 
                     onClick={handleTechnicalPractice}
                   >
-                    <p className="text-sm font-medium text-slate-900 mb-1">Practice Technical Questions</p>
-                    <p className="text-xs text-slate-800">Your technical scores could improve with more practice</p>
+                    <p className="text-sm font-medium text-white mb-1">Practice Technical Questions</p>
+                    <p className="text-xs text-white/80">Your technical scores could improve with more practice</p>
                   </div>
                   <div 
                     className="p-3 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 cursor-pointer hover:bg-white/20 hover:shadow-lg transition-all duration-300" 
                     onClick={handleResponseStructure}
                   >
-                    <p className="text-sm font-medium text-slate-900 mb-1">Work on Response Structure</p>
-                    <p className="text-xs text-slate-800">Focus on clear, organized answers using frameworks</p>
+                    <p className="text-sm font-medium text-white mb-1">Work on Response Structure</p>
+                    <p className="text-xs text-white/80">Focus on clear, organized answers using frameworks</p>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Progress Goal */}
-              <Card className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-md border border-purple-500/30 hover:from-purple-500/25 hover:to-pink-500/25 transition-all duration-300">
+              <Card className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-md border border-purple-500/30 hover:from-purple-500/25 hover:to-pink-500/25 transition-all duration-300 scale-in">
                 <CardHeader>
-                  <CardTitle className="text-slate-900 font-bold">Weekly Goal</CardTitle>
-                  <CardDescription className="text-slate-800 font-medium">
+                  <CardTitle className="text-white font-bold">Weekly Goal</CardTitle>
+                  <CardDescription className="text-white/90 font-medium">
                     5 practice sessions this week
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Progress value={60} className="mb-3 bg-white/20" />
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-900 text-sm font-medium">3 of 5 completed</span>
-                    <Badge className="bg-purple-500/30 text-purple-900 border-purple-500/40 font-semibold">
+                    <span className="text-white text-sm font-medium">3 of 5 completed</span>
+                    <Badge className="bg-purple-500/30 text-purple-200 border-purple-500/40 font-semibold">
                       60%
                     </Badge>
                   </div>
