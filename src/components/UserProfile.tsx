@@ -1,42 +1,71 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, User, Mail, Calendar, Award, TrendingUp, Brain } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, User, Settings, LogOut, Edit } from "lucide-react";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface UserProfileProps {
   user: any;
   onBack: () => void;
+  onLogout?: () => void;
 }
 
-export const UserProfile = ({ user, onBack }: UserProfileProps) => {
-  const [stats] = useState({
-    totalInterviews: 12,
-    averageScore: 85,
-    improvementRate: "+15%",
-    favoriteIndustry: "Software Engineering"
+export const UserProfile = ({ user, onBack, onLogout }: UserProfileProps) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [profileData, setProfileData] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    industry: user?.industry || '',
+    level: user?.level || '',
+    preferredType: user?.preferredType || ''
   });
+  const { toast } = useToast();
 
-  const recentInterviews = [
-    { date: "2024-06-20", type: "Technical", industry: "Software Engineering", score: 88 },
-    { date: "2024-06-19", type: "Behavioral", industry: "Marketing", score: 82 },
-    { date: "2024-06-18", type: "Technical", industry: "Data Science", score: 90 }
+  const industries = [
+    "Software Engineering", "Marketing", "Finance", "Healthcare", 
+    "Sales", "Consulting", "Data Science", "Design", "Operations", "HR"
   ];
 
+  const levels = ["Entry Level", "Mid Level", "Senior Level", "Executive"];
+  const types = ["Behavioral", "Technical", "Mixed"];
+
+  const handleSave = () => {
+    // Simulate saving profile
+    toast({
+      title: "Profile Updated",
+      description: "Your profile has been successfully updated.",
+    });
+    setIsEditing(false);
+  };
+
+  const handleLogout = () => {
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+    });
+    if (onLogout) {
+      onLogout();
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black relative overflow-hidden page-enter">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-1/2 -right-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
         <div className="absolute -bottom-1/2 -left-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-cyan-500/5 rounded-full blur-2xl animate-float"></div>
+        <div className="absolute top-3/4 right-1/4 w-48 h-48 bg-indigo-500/5 rounded-full blur-2xl animate-pulse-slow"></div>
       </div>
 
       <div className="relative z-10">
-        <div className="container mx-auto px-6 py-8">
+        <div className="container mx-auto px-6 py-8 max-w-4xl">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-8 fade-in">
             <div className="flex items-center">
               <Button 
                 variant="ghost" 
@@ -44,123 +73,213 @@ export const UserProfile = ({ user, onBack }: UserProfileProps) => {
                 className="mr-4 text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm border border-white/10"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Dashboard
+                Back
               </Button>
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center shadow-lg">
-                  <Brain className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-white">User Profile</h1>
-                  <p className="text-white/70">Manage your account and view your progress</p>
-                </div>
+              <div>
+                <h1 className="text-3xl font-bold text-white mb-2 text-reveal">User Profile</h1>
+                <p className="text-white/80 text-reveal">Manage your account and interview preferences</p>
               </div>
             </div>
+            <Button 
+              onClick={handleLogout}
+              variant="outline"
+              className="bg-red-500/20 hover:bg-red-500/30 text-red-200 border-red-500/30 backdrop-blur-sm"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
           </div>
 
-          <div className="max-w-4xl mx-auto">
-            {/* Profile Info */}
-            <Card className="mb-8 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300">
-              <CardHeader>
-                <CardTitle className="flex items-center text-white">
-                  <User className="h-5 w-5 mr-2" />
-                  Profile Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center space-x-6">
-                  <div className="w-20 h-20 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
-                    <User className="h-10 w-10 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-white">{user?.name || "User"}</h3>
-                    <div className="flex items-center text-white/70 mt-1">
-                      <Mail className="h-4 w-4 mr-2" />
-                      {user?.email || "user@example.com"}
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Profile Form */}
+            <div className="lg:col-span-2">
+              <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 slide-up">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center text-white">
+                        <User className="h-5 w-5 mr-2" />
+                        Profile Information
+                      </CardTitle>
+                      <CardDescription className="text-white/80">
+                        Update your personal information and preferences
+                      </CardDescription>
                     </div>
-                    <div className="flex items-center text-white/70 mt-1">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Member since June 2024
+                    <Button
+                      onClick={() => setIsEditing(!isEditing)}
+                      variant="outline"
+                      size="sm"
+                      className="bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      {isEditing ? 'Cancel' : 'Edit'}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-white/90">Full Name</Label>
+                      <Input
+                        value={profileData.name}
+                        onChange={(e) => setProfileData({...profileData, name: e.target.value})}
+                        disabled={!isEditing}
+                        className="bg-white/10 border-white/20 text-white placeholder-white/60 backdrop-blur-sm disabled:opacity-60"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-white/90">Email</Label>
+                      <Input
+                        value={profileData.email}
+                        onChange={(e) => setProfileData({...profileData, email: e.target.value})}
+                        disabled={!isEditing}
+                        className="bg-white/10 border-white/20 text-white placeholder-white/60 backdrop-blur-sm disabled:opacity-60"
+                      />
                     </div>
                   </div>
-                  <Badge className="bg-green-500/20 text-green-300 border-green-500/30">
-                    Active
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
 
-            {/* Stats Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Award className="h-6 w-6 text-blue-400" />
+                  <div className="space-y-2">
+                    <Label className="text-white/90">Industry</Label>
+                    <Select 
+                      value={profileData.industry} 
+                      onValueChange={(value) => setProfileData({...profileData, industry: value})}
+                      disabled={!isEditing}
+                    >
+                      <SelectTrigger className="bg-white/10 border-white/20 text-white backdrop-blur-sm disabled:opacity-60">
+                        <SelectValue placeholder="Select your industry" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-900/95 border-white/20 backdrop-blur-md">
+                        {industries.map((industry) => (
+                          <SelectItem key={industry} value={industry} className="text-white hover:bg-white/10">
+                            {industry}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div className="text-2xl font-bold text-blue-400">{stats.totalInterviews}</div>
-                  <div className="text-sm text-white/70">Total Interviews</div>
-                </CardContent>
-              </Card>
 
-              <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <TrendingUp className="h-6 w-6 text-green-400" />
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-white/90">Experience Level</Label>
+                      <Select 
+                        value={profileData.level} 
+                        onValueChange={(value) => setProfileData({...profileData, level: value})}
+                        disabled={!isEditing}
+                      >
+                        <SelectTrigger className="bg-white/10 border-white/20 text-white backdrop-blur-sm disabled:opacity-60">
+                          <SelectValue placeholder="Select your level" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-900/95 border-white/20 backdrop-blur-md">
+                          {levels.map((level) => (
+                            <SelectItem key={level} value={level} className="text-white hover:bg-white/10">
+                              {level}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-white/90">Preferred Interview Type</Label>
+                      <Select 
+                        value={profileData.preferredType} 
+                        onValueChange={(value) => setProfileData({...profileData, preferredType: value})}
+                        disabled={!isEditing}
+                      >
+                        <SelectTrigger className="bg-white/10 border-white/20 text-white backdrop-blur-sm disabled:opacity-60">
+                          <SelectValue placeholder="Select interview type" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-900/95 border-white/20 backdrop-blur-md">
+                          {types.map((type) => (
+                            <SelectItem key={type} value={type} className="text-white hover:bg-white/10">
+                              {type}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div className="text-2xl font-bold text-green-400">{stats.averageScore}%</div>
-                  <div className="text-sm text-white/70">Average Score</div>
-                </CardContent>
-              </Card>
 
-              <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <TrendingUp className="h-6 w-6 text-purple-400" />
-                  </div>
-                  <div className="text-2xl font-bold text-purple-400">{stats.improvementRate}</div>
-                  <div className="text-sm text-white/70">Improvement</div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <User className="h-6 w-6 text-orange-400" />
-                  </div>
-                  <div className="text-sm font-semibold text-orange-400">{stats.favoriteIndustry}</div>
-                  <div className="text-sm text-white/70">Top Industry</div>
+                  {isEditing && (
+                    <div className="flex space-x-3">
+                      <Button 
+                        onClick={handleSave}
+                        className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                      >
+                        Save Changes
+                      </Button>
+                      <Button 
+                        onClick={() => setIsEditing(false)}
+                        variant="outline"
+                        className="bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
 
-            {/* Recent Interviews */}
-            <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300">
-              <CardHeader>
-                <CardTitle className="text-white">Recent Interview Sessions</CardTitle>
-                <CardDescription className="text-white/70">Your latest practice sessions and scores</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentInterviews.map((interview, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
-                          <Award className="h-5 w-5 text-blue-400" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-white">{interview.type} Interview</div>
-                          <div className="text-sm text-white/70">{interview.industry}</div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-semibold text-green-400">{interview.score}%</div>
-                        <div className="text-sm text-white/70">{interview.date}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Account Stats */}
+              <Card className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 backdrop-blur-md border border-blue-500/30 hover:from-blue-500/25 hover:to-cyan-500/25 transition-all duration-300 card-entrance">
+                <CardHeader>
+                  <CardTitle className="text-white">Account Stats</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-white/80">Sessions Completed:</span>
+                    <span className="font-bold text-white">24</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/80">Average Score:</span>
+                    <span className="font-bold text-white">85%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/80">Hours Practiced:</span>
+                    <span className="font-bold text-white">12.5</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/80">Member Since:</span>
+                    <span className="font-bold text-white">Jan 2024</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Settings */}
+              <Card className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-md border border-purple-500/30 hover:from-purple-500/25 hover:to-pink-500/25 transition-all duration-300 scale-in">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-white">
+                    <Settings className="h-5 w-5 mr-2" />
+                    Quick Settings
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
+                  >
+                    Notification Preferences
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
+                  >
+                    Privacy Settings
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
+                  >
+                    Data Export
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>

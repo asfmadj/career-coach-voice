@@ -233,25 +233,25 @@ export const RandomPractice = ({ onBack, interviewConfig }: RandomPracticeProps)
                 {/* Tips */}
                 <Card className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-md border border-green-500/30 hover:from-green-500/25 hover:to-emerald-500/25 transition-all duration-300 card-entrance">
                   <CardHeader>
-                    <CardTitle className="text-white">Quick Tips</CardTitle>
+                    <CardTitle className="text-black font-bold">Quick Tips</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-2 text-sm">
                       <li className="flex items-start">
                         <CheckCircle className="h-4 w-4 text-green-400 mr-2 mt-0.5" />
-                        <span className="text-white/90">Use the STAR method (Situation, Task, Action, Result)</span>
+                        <span className="text-black font-medium">Use the STAR method (Situation, Task, Action, Result)</span>
                       </li>
                       <li className="flex items-start">
                         <CheckCircle className="h-4 w-4 text-green-400 mr-2 mt-0.5" />
-                        <span className="text-white/90">Be specific with examples and numbers</span>
+                        <span className="text-black font-medium">Be specific with examples and numbers</span>
                       </li>
                       <li className="flex items-start">
                         <CheckCircle className="h-4 w-4 text-green-400 mr-2 mt-0.5" />
-                        <span className="text-white/90">Keep your answer focused and concise</span>
+                        <span className="text-black font-medium">Keep your answer focused and concise</span>
                       </li>
                       <li className="flex items-start">
                         <CheckCircle className="h-4 w-4 text-green-400 mr-2 mt-0.5" />
-                        <span className="text-white/90">Practice speaking your answer aloud</span>
+                        <span className="text-black font-medium">Practice speaking your answer aloud</span>
                       </li>
                     </ul>
                   </CardContent>
@@ -260,21 +260,21 @@ export const RandomPractice = ({ onBack, interviewConfig }: RandomPracticeProps)
                 {/* Progress */}
                 <Card className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-md border border-blue-500/30 hover:from-blue-500/25 hover:to-purple-500/25 transition-all duration-300 scale-in">
                   <CardHeader>
-                    <CardTitle className="text-white">Session Info</CardTitle>
+                    <CardTitle className="text-black font-bold">Session Info</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-white/80">Industry:</span>
-                        <span className="font-medium text-white">{interviewConfig.industry || "General"}</span>
+                        <span className="text-black/80 font-medium">Industry:</span>
+                        <span className="font-bold text-black">{interviewConfig.industry || "General"}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-white/80">Level:</span>
-                        <span className="font-medium text-white">{interviewConfig.level || "Entry"}</span>
+                        <span className="text-black/80 font-medium">Level:</span>
+                        <span className="font-bold text-black">{interviewConfig.level || "Entry"}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-white/80">Type:</span>
-                        <span className="font-medium text-white">{interviewConfig.type || "Behavioral"}</span>
+                        <span className="text-black/80 font-medium">Type:</span>
+                        <span className="font-bold text-black">{interviewConfig.type || "Behavioral"}</span>
                       </div>
                     </div>
                   </CardContent>

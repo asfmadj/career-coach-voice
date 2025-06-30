@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Mic, CheckCircle, BarChart3, Users, Zap, BookOpen, Brain } from "lucide-react";
+import { ArrowRight, Mic, CheckCircle, BarChart3, Users, Zap, BookOpen, Brain, LogOut } from "lucide-react";
 import { useState } from "react";
 import { InterviewSetup } from "@/components/InterviewSetup";
 import { Dashboard } from "@/components/Dashboard";
@@ -72,7 +72,7 @@ const Index = () => {
 
   const handleSignIn = (userData: any) => {
     setUser(userData);
-    setCurrentView('dashboard');
+    setCurrentView('landing');
   };
 
   const handleGetStarted = () => {
@@ -87,12 +87,23 @@ const Index = () => {
     }
   };
 
+  const handleLogout = () => {
+    setUser(null);
+    setInterviewConfig({
+      industry: '',
+      level: '',
+      type: '',
+      duration: ''
+    });
+    setCurrentView('landing');
+  };
+
   if (currentView === 'signin') {
     return <SignIn onSignIn={handleSignIn} onBack={() => setCurrentView('landing')} />;
   }
 
   if (currentView === 'profile') {
-    return <UserProfile user={user} onBack={() => setCurrentView('dashboard')} />;
+    return <UserProfile user={user} onBack={() => setCurrentView('dashboard')} onLogout={handleLogout} />;
   }
 
   if (currentView === 'learn-more') {
@@ -177,6 +188,14 @@ const Index = () => {
                     className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white shadow-lg"
                   >
                     Dashboard
+                  </Button>
+                  <Button 
+                    onClick={handleLogout}
+                    variant="outline"
+                    className="bg-red-500/20 hover:bg-red-500/30 text-red-200 border-red-500/30 backdrop-blur-sm"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
                   </Button>
                 </div>
               ) : (

@@ -190,11 +190,11 @@ export const InterviewSetup = ({ onBack, onComplete }: InterviewSetupProps) => {
 
               <Card className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-md border border-green-500/30 hover:from-green-500/25 hover:to-emerald-500/25 transition-all duration-300 slide-up">
                 <CardHeader>
-                  <CardTitle className="flex items-center text-white">
+                  <CardTitle className="flex items-center text-black font-bold">
                     <Target className="h-5 w-5 mr-2 text-green-400" />
                     Ready to Ace Your Interview?
                   </CardTitle>
-                  <CardDescription className="text-white/90">
+                  <CardDescription className="text-black/80 font-medium">
                     Quick tips to get you started
                   </CardDescription>
                 </CardHeader>
