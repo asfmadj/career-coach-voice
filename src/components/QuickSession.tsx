@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -434,122 +433,131 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
   const progressPercentage = ((currentQuestionIndex + (currentAnswer ? 1 : 0)) / questions.length) * 100;
 
   const getScoreColor = (score: number) => {
-    if (score >= 85) return "text-emerald-600";
-    if (score >= 75) return "text-blue-600";
-    if (score >= 65) return "text-amber-600";
-    return "text-red-500";
+    if (score >= 85) return "text-emerald-400";
+    if (score >= 75) return "text-blue-400";
+    if (score >= 65) return "text-amber-400";
+    return "text-red-400";
   };
 
   if (showStats && sessionStats) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50">
-        <div className="container mx-auto px-6 py-8">
-          <div className="max-w-4xl mx-auto">
-            <Card className="shadow-xl border-0">
-              <CardHeader className="bg-gradient-to-r from-primary to-accent text-white rounded-t-lg">
-                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Brain className="h-8 w-8 text-white" />
-                </div>
-                <CardTitle className="text-2xl text-center">Quick Session Analysis</CardTitle>
-                <CardDescription className="text-primary-100 text-center">
-                  AI-powered performance insights from your {sessionType} interview
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-8 space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-6 rounded-xl border border-primary/20">
-                    <h3 className="font-semibold mb-4 text-primary flex items-center">
-                      <TrendingUp className="h-5 w-5 mr-2" />
-                      Performance Score
-                    </h3>
-                    <div className="text-center">
-                      <div className={`text-4xl font-bold mb-2 ${getScoreColor(sessionStats.overallScore)}`}>
-                        {sessionStats.overallScore}%
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black relative overflow-hidden fade-in">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-1/2 -right-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+          <div className="absolute -bottom-1/2 -left-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-cyan-500/5 rounded-full blur-2xl animate-float"></div>
+        </div>
+
+        <div className="relative z-10">
+          <div className="container mx-auto px-6 py-8">
+            <div className="max-w-4xl mx-auto">
+              <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 shadow-xl slide-up">
+                <CardHeader className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-white rounded-t-lg backdrop-blur-sm border-b border-white/20">
+                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-scale-in">
+                    <Brain className="h-8 w-8 text-white" />
+                  </div>
+                  <CardTitle className="text-2xl text-center text-white">Quick Session Analysis</CardTitle>
+                  <CardDescription className="text-cyan-200 text-center">
+                    AI-powered performance insights from your {sessionType} interview
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 p-6 rounded-xl border border-cyan-500/20 backdrop-blur-sm">
+                      <h3 className="font-semibold mb-4 text-cyan-300 flex items-center">
+                        <TrendingUp className="h-5 w-5 mr-2" />
+                        Performance Score
+                      </h3>
+                      <div className="text-center">
+                        <div className={`text-4xl font-bold mb-2 ${getScoreColor(sessionStats.overallScore)}`}>
+                          {sessionStats.overallScore}%
+                        </div>
+                        <Progress value={sessionStats.overallScore} className="mb-4 h-3" />
                       </div>
-                      <Progress value={sessionStats.overallScore} className="mb-4 h-3" />
+                      
+                      <div className="grid grid-cols-2 gap-3 mt-4">
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-white/70">Communication</span>
+                            <span className="font-bold text-cyan-300">{sessionStats.skillBreakdown.communication}%</span>
+                          </div>
+                          <Progress value={sessionStats.skillBreakdown.communication} className="h-2" />
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-white/70">Technical</span>
+                            <span className="font-bold text-cyan-300">{sessionStats.skillBreakdown.technical}%</span>
+                          </div>
+                          <Progress value={sessionStats.skillBreakdown.technical} className="h-2" />
+                        </div>
+                      </div>
                     </div>
+
+                    <div className="bg-gradient-to-br from-emerald-500/10 to-green-500/10 p-6 rounded-xl border border-emerald-500/20 backdrop-blur-sm">
+                      <h3 className="font-semibold mb-4 text-emerald-300">Session Summary</h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Session Type:</span>
+                          <Badge className="capitalize bg-emerald-500/20 text-emerald-300 border-emerald-500/30">{sessionType}</Badge>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Questions Answered:</span>
+                          <span className="font-medium text-white">{answers.filter(a => a).length} / {currentQuestions.length}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Time Used:</span>
+                          <span className="font-medium text-white">{formatTime(300 - timeLeft)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Language:</span>
+                          <span className="font-medium text-white">{languages.find(l => l.code === selectedLanguage)?.name}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white/5 p-6 rounded-xl border border-white/10 backdrop-blur-sm">
+                    <h3 className="font-semibold mb-3 text-white">AI Feedback</h3>
+                    <p className="text-white/80 mb-4">{sessionStats.detailedFeedback}</p>
                     
-                    <div className="grid grid-cols-2 gap-3 mt-4">
+                    <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-muted-foreground">Communication</span>
-                          <span className="font-bold">{sessionStats.skillBreakdown.communication}%</span>
-                        </div>
-                        <Progress value={sessionStats.skillBreakdown.communication} className="h-2" />
+                        <h4 className="font-medium text-emerald-300 mb-2">Strengths</h4>
+                        <ul className="text-sm text-white/70 space-y-1">
+                          {sessionStats.strengths.map((strength: string, index: number) => (
+                            <li key={index} className="flex items-center">
+                              <CheckCircle className="h-3 w-3 text-emerald-400 mr-2" />
+                              {strength}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                       <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-muted-foreground">Technical</span>
-                          <span className="font-bold">{sessionStats.skillBreakdown.technical}%</span>
-                        </div>
-                        <Progress value={sessionStats.skillBreakdown.technical} className="h-2" />
+                        <h4 className="font-medium text-amber-300 mb-2">Areas for Improvement</h4>
+                        <ul className="text-sm text-white/70 space-y-1">
+                          {sessionStats.weaknesses.map((weakness: string, index: number) => (
+                            <li key={index} className="flex items-center">
+                              <ArrowRight className="h-3 w-3 text-amber-400 mr-2" />
+                              {weakness}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     </div>
                   </div>
-
-                  <div className="bg-gradient-to-br from-emerald-50 to-green-50 p-6 rounded-xl border border-emerald-200">
-                    <h3 className="font-semibold mb-4 text-emerald-800">Session Summary</h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Session Type:</span>
-                        <Badge className="capitalize bg-emerald-100 text-emerald-800">{sessionType}</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Questions Answered:</span>
-                        <span className="font-medium">{answers.filter(a => a).length} / {currentQuestions.length}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Time Used:</span>
-                        <span className="font-medium">{formatTime(300 - timeLeft)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Language:</span>
-                        <span className="font-medium">{languages.find(l => l.code === selectedLanguage)?.name}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-muted/50 p-6 rounded-xl border">
-                  <h3 className="font-semibold mb-3">AI Feedback</h3>
-                  <p className="text-muted-foreground mb-4">{sessionStats.detailedFeedback}</p>
                   
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <h4 className="font-medium text-emerald-700 mb-2">Strengths</h4>
-                      <ul className="text-sm text-muted-foreground space-y-1">
-                        {sessionStats.strengths.map((strength: string, index: number) => (
-                          <li key={index} className="flex items-center">
-                            <CheckCircle className="h-3 w-3 text-emerald-500 mr-2" />
-                            {strength}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-amber-700 mb-2">Areas for Improvement</h4>
-                      <ul className="text-sm text-muted-foreground space-y-1">
-                        {sessionStats.weaknesses.map((weakness: string, index: number) => (
-                          <li key={index} className="flex items-center">
-                            <ArrowRight className="h-3 w-3 text-amber-500 mr-2" />
-                            {weakness}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                  <div className="flex space-x-3 justify-center">
+                    <Button onClick={onBack} variant="outline" className="bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm">
+                      Back to Dashboard
+                    </Button>
+                    <Button onClick={() => window.location.reload()} className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white shadow-lg">
+                      Start Another Session
+                    </Button>
                   </div>
-                </div>
-                
-                <div className="flex space-x-3 justify-center">
-                  <Button onClick={onBack} variant="outline" className="border-muted-foreground/30 hover:bg-muted">
-                    Back to Dashboard
-                  </Button>
-                  <Button onClick={() => window.location.reload()} className="bg-primary hover:bg-primary/90">
-                    Start Another Session
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
@@ -558,45 +566,54 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
 
   if (isCompleted && !showStats) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-        <div className="container mx-auto px-6 py-8">
-          <div className="max-w-4xl mx-auto">
-            <Card className="shadow-xl border-0">
-              <CardHeader className="text-center bg-gradient-to-r from-emerald-500 to-blue-600 text-white rounded-t-lg">
-                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="h-8 w-8 text-white" />
-                </div>
-                <CardTitle className="text-2xl">Session Complete!</CardTitle>
-                <CardDescription className="text-emerald-100">
-                  You've completed your 5-minute {sessionType} practice session
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-8 space-y-6">
-                {isAnalyzing && (
-                  <div className="text-center py-4">
-                    <Brain className="h-8 w-8 mx-auto mb-2 text-blue-600 animate-pulse" />
-                    <p className="text-blue-600">AI is analyzing your performance...</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black relative overflow-hidden fade-in">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-1/2 -right-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+          <div className="absolute -bottom-1/2 -left-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-cyan-500/5 rounded-full blur-2xl animate-float"></div>
+        </div>
+
+        <div className="relative z-10">
+          <div className="container mx-auto px-6 py-8">
+            <div className="max-w-4xl mx-auto">
+              <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 shadow-xl slide-up">
+                <CardHeader className="text-center bg-gradient-to-r from-emerald-500/20 to-blue-500/20 text-white rounded-t-lg backdrop-blur-sm">
+                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-scale-in">
+                    <CheckCircle className="h-8 w-8 text-white" />
                   </div>
-                )}
-                
-                <div className="flex space-x-3 justify-center">
-                  <Button onClick={onBack} variant="outline" className="border-slate-300 hover:bg-slate-50">
-                    Back to Dashboard
-                  </Button>
-                  <Button 
-                    onClick={viewStats} 
-                    disabled={isAnalyzing}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    <TrendingUp className="h-4 w-4 mr-2" />
-                    {isAnalyzing ? "Analyzing..." : "View Performance Stats"}
-                  </Button>
-                  <Button onClick={() => window.location.reload()} variant="outline">
-                    Start Another Session
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                  <CardTitle className="text-2xl text-white">Session Complete!</CardTitle>
+                  <CardDescription className="text-emerald-200">
+                    You've completed your 5-minute {sessionType} practice session
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 space-y-6">
+                  {isAnalyzing && (
+                    <div className="text-center py-4">
+                      <Brain className="h-8 w-8 mx-auto mb-2 text-cyan-400 animate-pulse" />
+                      <p className="text-cyan-300">AI is analyzing your performance...</p>
+                    </div>
+                  )}
+                  
+                  <div className="flex space-x-3 justify-center">
+                    <Button onClick={onBack} variant="outline" className="bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm">
+                      Back to Dashboard
+                    </Button>
+                    <Button 
+                      onClick={viewStats} 
+                      disabled={isAnalyzing}
+                      className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white shadow-lg"
+                    >
+                      <TrendingUp className="h-4 w-4 mr-2" />
+                      {isAnalyzing ? "Analyzing..." : "View Performance Stats"}
+                    </Button>
+                    <Button onClick={() => window.location.reload()} variant="outline" className="bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm">
+                      Start Another Session
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
@@ -604,318 +621,332 @@ export const QuickSession = ({ onBack, interviewConfig }: QuickSessionProps) => 
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50">
-      <div className="container mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center">
-            <Button variant="ghost" onClick={onBack} className="mr-4 hover:bg-muted">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                5-Minute Quick Session
-              </h1>
-              <p className="text-muted-foreground">Choose between text or voice interview practice</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <div className="text-right">
-              <div className={`text-lg font-bold ${timeLeft < 60 ? 'text-destructive' : 'text-primary'}`}>
-                {formatTime(timeLeft)}
-              </div>
-              <div className="text-sm text-muted-foreground">remaining</div>
-            </div>
-            {isCallActive && (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black relative overflow-hidden fade-in">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-1/2 -right-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div className="absolute -bottom-1/2 -left-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-cyan-500/5 rounded-full blur-2xl animate-float"></div>
+      </div>
+
+      <div className="relative z-10">
+        <div className="container mx-auto px-6 py-8">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8 slide-up">
+            <div className="flex items-center">
               <Button 
-                onClick={endVoiceSession}
-                variant="destructive"
-                size="sm"
-                disabled={isEnding}
+                variant="ghost" 
+                onClick={onBack} 
+                className="mr-4 text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm border border-white/10"
               >
-                {isEnding ? "Ending..." : "End Session"}
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Dashboard
               </Button>
-            )}
-          </div>
-        </div>
-
-        <div className="max-w-5xl mx-auto">
-          {/* Progress */}
-          <Card className="mb-6 shadow-lg border-0 bg-gradient-to-r from-white to-primary/5">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium text-primary">Session Progress</span>
-                <span className="text-sm text-muted-foreground">
-                  Question {currentQuestionIndex + 1} of {currentQuestions.length}
-                </span>
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                  5-Minute Quick Session
+                </h1>
+                <p className="text-white/70">Choose between text or voice interview practice</p>
               </div>
-              <Progress value={progressPercentage} className="w-full h-3 bg-primary/10" />
-            </CardContent>
-          </Card>
-
-          {!isActive ? (
-            /* Session Type Selection - Enhanced UI */
-            <Card className="shadow-xl border-0 overflow-hidden">
-              <CardHeader className="text-center bg-gradient-to-r from-primary/10 to-accent/10 border-b">
-                <CardTitle className="text-3xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  Choose Your Interview Style
-                </CardTitle>
-                <CardDescription className="text-lg">
-                  Select how you'd like to practice - both options cover the same essential questions
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-8">
-                {/* Language Selector - Enhanced */}
-                <div className="flex items-center justify-center space-x-3 mb-8 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-primary/20">
-                  <Globe className="h-5 w-5 text-primary" />
-                  <label className="text-base font-medium text-primary">Interview Language:</label>
-                  <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-                    <SelectTrigger className="w-52 border-primary/30 focus:border-primary">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {languages.map((lang) => (
-                        <SelectItem key={lang.code} value={lang.code}>
-                          {lang.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="text-right">
+                <div className={`text-lg font-bold ${timeLeft < 60 ? 'text-red-400' : 'text-cyan-400'}`}>
+                  {formatTime(timeLeft)}
                 </div>
+                <div className="text-sm text-white/70">remaining</div>
+              </div>
+              {isCallActive && (
+                <Button 
+                  onClick={endVoiceSession}
+                  variant="destructive"
+                  size="sm"
+                  disabled={isEnding}
+                  className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border-red-500/30"
+                >
+                  {isEnding ? "Ending..." : "End Session"}
+                </Button>
+              )}
+            </div>
+          </div>
 
-                <Tabs defaultValue="text" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 mb-8 bg-muted/30 h-14">
-                    <TabsTrigger value="text" className="flex items-center space-x-3 data-[state=active]:bg-white data-[state=active]:shadow-md text-base py-3">
-                      <MessageSquare className="h-5 w-5" />
-                      <span>Text Interview</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="voice" className="flex items-center space-x-3 data-[state=active]:bg-white data-[state=active]:shadow-md text-base py-3">
-                      <Mic className="h-5 w-5" />
-                      <span>Voice Interview</span>
-                    </TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="text" className="space-y-8">
-                    <div className="text-center">
-                      <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                        <MessageSquare className="h-12 w-12 text-primary" />
-                      </div>
-                      <h3 className="text-2xl font-semibold mb-3 text-gray-800">Text-Based Interview</h3>
-                      <p className="text-muted-foreground mb-8 text-lg max-w-md mx-auto">Type your responses to interview questions with time to think</p>
-                      <div className="grid md:grid-cols-3 gap-6 mb-8">
-                        <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-xl border border-primary/20 shadow-sm">
-                          <p className="font-semibold text-primary text-lg mb-2">✍️ Written Responses</p>
-                          <p className="text-primary/70">Perfect for organizing thoughts</p>
-                        </div>
-                        <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-xl border border-primary/20 shadow-sm">
-                          <p className="font-semibold text-primary text-lg mb-2">⏰ Self-Paced</p>
-                          <p className="text-primary/70">Take time to craft answers</p>
-                        </div>
-                        <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-xl border border-primary/20 shadow-sm">
-                          <p className="font-semibold text-primary text-lg mb-2">📝 Structure Practice</p>
-                          <p className="text-primary/70">Focus on answer organization</p>
-                        </div>
-                      </div>
-                      <Button 
-                        onClick={startTextSession}
-                        className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white px-10 py-4 text-lg shadow-lg"
-                        size="lg"
-                      >
-                        <MessageSquare className="h-5 w-5 mr-3" />
-                        Start Text Interview
-                      </Button>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="voice" className="space-y-8">
-                    <div className="text-center">
-                      <div className="w-24 h-24 bg-gradient-to-br from-accent/20 to-accent/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                        <Mic className="h-12 w-12 text-accent" />
-                      </div>
-                      <h3 className="text-2xl font-semibold mb-3 text-gray-800">Voice Interview</h3>
-                      <p className="text-muted-foreground mb-8 text-lg max-w-md mx-auto">Speak naturally with our AI interviewer for realistic practice</p>
-                      
-                      {vapiError && (
-                        <div className="bg-destructive/5 border border-destructive/20 p-6 rounded-xl mb-6 max-w-md mx-auto">
-                          <AlertCircle className="h-6 w-6 text-destructive mx-auto mb-2" />
-                          <p className="text-destructive font-medium">Voice system unavailable</p>
-                          <p className="text-destructive/70 text-sm mt-1">Please use text interview or check microphone permissions.</p>
-                        </div>
-                      )}
-                      
-                      <div className="grid md:grid-cols-3 gap-6 mb-8">
-                        <div className="bg-gradient-to-br from-accent/10 to-accent/5 p-6 rounded-xl border border-accent/20 shadow-sm">
-                          <p className="font-semibold text-accent text-lg mb-2">🎤 Real Conversation</p>
-                          <p className="text-accent/70">Practice speaking skills</p>
-                        </div>
-                        <div className="bg-gradient-to-br from-accent/10 to-accent/5 p-6 rounded-xl border border-accent/20 shadow-sm">
-                          <p className="font-semibold text-accent text-lg mb-2">🤖 AI Interviewer</p>
-                          <p className="text-accent/70">Interactive responses</p>
-                        </div>
-                        <div className="bg-gradient-to-br from-accent/10 to-accent/5 p-6 rounded-xl border border-accent/20 shadow-sm">
-                          <p className="font-semibold text-accent text-lg mb-2">⚡ Real-time</p>
-                          <p className="text-accent/70">Immediate feedback</p>
-                        </div>
-                      </div>
-                      <Button 
-                        onClick={startVoiceSession}
-                        disabled={!isVapiInitialized || vapiError}
-                        className="bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 text-white px-10 py-4 text-lg shadow-lg disabled:bg-muted-foreground disabled:cursor-not-allowed"
-                        size="lg"
-                      >
-                        <Mic className="h-5 w-5 mr-3" />
-                        {!isVapiInitialized ? "Initializing..." : vapiError ? "Voice Unavailable" : "Start Voice Interview"}
-                      </Button>
-                    </div>
-                  </TabsContent>
-                </Tabs>
+          <div className="max-w-5xl mx-auto">
+            {/* Progress */}
+            <Card className="mb-6 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 shadow-lg slide-up">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium text-cyan-300">Session Progress</span>
+                  <span className="text-sm text-white/70">
+                    Question {currentQuestionIndex + 1} of {currentQuestions.length}
+                  </span>
+                </div>
+                <Progress value={progressPercentage} className="w-full h-3 bg-white/10" />
               </CardContent>
             </Card>
-          ) : (
-            /* Active Session Interface - Enhanced */
-            <div className="grid lg:grid-cols-3 gap-8">
-              {/* Question Area */}
-              <div className="lg:col-span-2">
-                <Card className="shadow-xl border-0">
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      {sessionType === "text" ? <MessageSquare className="h-5 w-5 mr-2" /> : <Mic className="h-5 w-5 mr-2" />}
-                      Question {currentQuestionIndex + 1}
-                    </CardTitle>
-                    <CardDescription>
-                      {sessionType === "text" 
-                        ? "Type your answer below - be concise but thorough" 
-                        : "Speak naturally - the AI is listening and will respond"
-                      }
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="p-6 bg-primary/5 rounded-lg border-l-4 border-primary mb-6">
-                      <p className="text-lg font-medium text-primary">
-                        {currentQuestions[currentQuestionIndex]}
-                      </p>
-                    </div>
+
+            {!isActive ? (
+              /* Session Type Selection - Enhanced UI */
+              <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 shadow-xl overflow-hidden slide-up">
+                <CardHeader className="text-center bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border-b border-white/20 backdrop-blur-sm">
+                  <CardTitle className="text-3xl bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                    Choose Your Interview Style
+                  </CardTitle>
+                  <CardDescription className="text-lg text-white/80">
+                    Select how you'd like to practice - both options cover the same essential questions
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-8">
+                  {/* Language Selector - Enhanced */}
+                  <div className="flex items-center justify-center space-x-3 mb-8 p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl border border-cyan-500/20 backdrop-blur-sm">
+                    <Globe className="h-5 w-5 text-cyan-400" />
+                    <label className="text-base font-medium text-cyan-300">Interview Language:</label>
+                    <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+                      <SelectTrigger className="w-52 bg-white/10 border-cyan-500/30 focus:border-cyan-400 text-white backdrop-blur-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-800/90 backdrop-blur-md border-white/20">
+                        {languages.map((lang) => (
+                          <SelectItem key={lang.code} value={lang.code} className="text-white hover:bg-white/10">
+                            {lang.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Tabs defaultValue="text" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-8 bg-white/10 backdrop-blur-sm h-14 border border-white/20">
+                      <TabsTrigger value="text" className="flex items-center space-x-3 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:shadow-md text-base py-3 text-white/80">
+                        <MessageSquare className="h-5 w-5" />
+                        <span>Text Interview</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="voice" className="flex items-center space-x-3 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:shadow-md text-base py-3 text-white/80">
+                        <Mic className="h-5 w-5" />
+                        <span>Voice Interview</span>
+                      </TabsTrigger>
+                    </TabsList>
                     
-                    {sessionType === "text" ? (
-                      <>
-                        <textarea
-                          value={currentAnswer}
-                          onChange={(e) => setCurrentAnswer(e.target.value)}
-                          placeholder="Type your answer here..."
-                          className="w-full h-40 p-4 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                        />
+                    <TabsContent value="text" className="space-y-8">
+                      <div className="text-center">
+                        <div className="w-24 h-24 bg-gradient-to-br from-cyan-500/20 to-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-scale-in">
+                          <MessageSquare className="h-12 w-12 text-cyan-400" />
+                        </div>
+                        <h3 className="text-2xl font-semibold mb-3 text-white">Text-Based Interview</h3>
+                        <p className="text-white/80 mb-8 text-lg max-w-md mx-auto">Type your responses to interview questions with time to think</p>
+                        <div className="grid md:grid-cols-3 gap-6 mb-8">
+                          <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/5 p-6 rounded-xl border border-cyan-500/20 shadow-sm backdrop-blur-sm">
+                            <p className="font-semibold text-cyan-300 text-lg mb-2">✍️ Written Responses</p>
+                            <p className="text-cyan-200/70">Perfect for organizing thoughts</p>
+                          </div>
+                          <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/5 p-6 rounded-xl border border-cyan-500/20 shadow-sm backdrop-blur-sm">
+                            <p className="font-semibold text-cyan-300 text-lg mb-2">⏰ Self-Paced</p>
+                            <p className="text-cyan-200/70">Take time to craft answers</p>
+                          </div>
+                          <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/5 p-6 rounded-xl border border-cyan-500/20 shadow-sm backdrop-blur-sm">
+                            <p className="font-semibold text-cyan-300 text-lg mb-2">📝 Structure Practice</p>
+                            <p className="text-cyan-200/70">Focus on answer organization</p>
+                          </div>
+                        </div>
+                        <Button 
+                          onClick={startTextSession}
+                          className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-10 py-4 text-lg shadow-lg"
+                          size="lg"
+                        >
+                          <MessageSquare className="h-5 w-5 mr-3" />
+                          Start Text Interview
+                        </Button>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="voice" className="space-y-8">
+                      <div className="text-center">
+                        <div className="w-24 h-24 bg-gradient-to-br from-purple-500/20 to-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-scale-in">
+                          <Mic className="h-12 w-12 text-purple-400" />
+                        </div>
+                        <h3 className="text-2xl font-semibold mb-3 text-white">Voice Interview</h3>
+                        <p className="text-white/80 mb-8 text-lg max-w-md mx-auto">Speak naturally with our AI interviewer for realistic practice</p>
                         
-                        <div className="flex space-x-3 mt-4">
-                          <Button 
-                            onClick={nextQuestion} 
-                            disabled={!currentAnswer.trim()}
-                            className="bg-primary hover:bg-primary/90"
-                          >
-                            {currentQuestionIndex < currentQuestions.length - 1 ? (
-                              <>
-                                Next Question
-                                <ArrowRight className="h-4 w-4 ml-2" />
-                              </>
-                            ) : (
-                              <>
-                                Complete Session
-                                <CheckCircle className="h-4 w-4 ml-2" />
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="text-center py-8">
-                        <div className="w-24 h-24 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                          {isCallActive ? (
-                            <Mic className="h-12 w-12 text-accent animate-pulse" />
-                          ) : (
-                            <Phone className="h-12 w-12 text-muted-foreground" />
-                          )}
-                        </div>
-                        <div className="text-lg font-semibold mb-2">
-                          {isCallActive ? 'Interview Active' : 'Connecting...'}
-                        </div>
-                        {isCallActive && (
-                          <div className="space-y-4">
-                            <p className="text-muted-foreground">Speak clearly and naturally</p>
-                            <Button
-                              onClick={endVoiceSession}
-                              variant="destructive"
-                              className="bg-destructive hover:bg-destructive/90"
-                            >
-                              <PhoneOff className="h-4 w-4 mr-2" />
-                              End Interview
-                            </Button>
+                        {vapiError && (
+                          <div className="bg-red-500/10 border border-red-500/20 p-6 rounded-xl mb-6 max-w-md mx-auto backdrop-blur-sm">
+                            <AlertCircle className="h-6 w-6 text-red-400 mx-auto mb-2" />
+                            <p className="text-red-300 font-medium">Voice system unavailable</p>
+                            <p className="text-red-200/70 text-sm mt-1">Please use text interview or check microphone permissions.</p>
                           </div>
                         )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Session Info Sidebar */}
-              <div className="space-y-6">
-                {/* Session Overview */}
-                <Card className="shadow-lg border-0">
-                  <CardHeader>
-                    <CardTitle>Session Overview</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3 text-sm">
-                      <div className="flex justify-between">
-                        <span className="font-medium text-muted-foreground">Type:</span>
-                        <Badge className="capitalize bg-primary/10 text-primary">{sessionType}</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium text-muted-foreground">Duration:</span>
-                        <span>5 minutes</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium text-muted-foreground">Questions:</span>
-                        <span>3 essential questions</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium text-muted-foreground">Language:</span>
-                        <span>{languages.find(l => l.code === selectedLanguage)?.name}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Questions Progress */}
-                <Card className="shadow-lg border-0">
-                  <CardHeader>
-                    <CardTitle>Questions Progress</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {currentQuestions.map((_, index) => (
-                        <div 
-                          key={index} 
-                          className={`flex items-center space-x-3 text-sm ${
-                            index === currentQuestionIndex ? 'text-primary font-medium' : 
-                            index < currentQuestionIndex ? 'text-emerald-600' : 'text-muted-foreground'
-                          }`}
-                        >
-                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-                            index === currentQuestionIndex ? 'bg-primary/10 text-primary' :
-                            index < currentQuestionIndex ? 'bg-emerald-100 text-emerald-600' : 'bg-muted text-muted-foreground'
-                          }`}>
-                            {index < currentQuestionIndex ? <CheckCircle className="h-3 w-3" /> : index + 1}
+                        
+                        <div className="grid md:grid-cols-3 gap-6 mb-8">
+                          <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/5 p-6 rounded-xl border border-purple-500/20 shadow-sm backdrop-blur-sm">
+                            <p className="font-semibold text-purple-300 text-lg mb-2">🎤 Real Conversation</p>
+                            <p className="text-purple-200/70">Practice speaking skills</p>
                           </div>
-                          <span>Question {index + 1}</span>
+                          <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/5 p-6 rounded-xl border border-purple-500/20 shadow-sm backdrop-blur-sm">
+                            <p className="font-semibold text-purple-300 text-lg mb-2">🤖 AI Interviewer</p>
+                            <p className="text-purple-200/70">Interactive responses</p>
+                          </div>
+                          <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/5 p-6 rounded-xl border border-purple-500/20 shadow-sm backdrop-blur-sm">
+                            <p className="font-semibold text-purple-300 text-lg mb-2">⚡ Real-time</p>
+                            <p className="text-purple-200/70">Immediate feedback</p>
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                        <Button 
+                          onClick={startVoiceSession}
+                          disabled={!isVapiInitialized || vapiError}
+                          className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-10 py-4 text-lg shadow-lg disabled:bg-gray-500/20 disabled:cursor-not-allowed disabled:text-gray-400"
+                          size="lg"
+                        >
+                          <Mic className="h-5 w-5 mr-3" />
+                          {!isVapiInitialized ? "Initializing..." : vapiError ? "Voice Unavailable" : "Start Voice Interview"}
+                        </Button>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            ) : (
+              /* Active Session Interface - Enhanced */
+              <div className="grid lg:grid-cols-3 gap-8">
+                {/* Question Area */}
+                <div className="lg:col-span-2">
+                  <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 shadow-xl slide-up">
+                    <CardHeader>
+                      <CardTitle className="flex items-center text-white">
+                        {sessionType === "text" ? <MessageSquare className="h-5 w-5 mr-2" /> : <Mic className="h-5 w-5 mr-2" />}
+                        Question {currentQuestionIndex + 1}
+                      </CardTitle>
+                      <CardDescription className="text-white/80">
+                        {sessionType === "text" 
+                          ? "Type your answer below - be concise but thorough" 
+                          : "Speak naturally - the AI is listening and will respond"
+                        }
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="p-6 bg-cyan-500/10 rounded-lg border-l-4 border-cyan-400 mb-6 backdrop-blur-sm">
+                        <p className="text-lg font-medium text-cyan-300">
+                          {currentQuestions[currentQuestionIndex]}
+                        </p>
+                      </div>
+                      
+                      {sessionType === "text" ? (
+                        <>
+                          <textarea
+                            value={currentAnswer}
+                            onChange={(e) => setCurrentAnswer(e.target.value)}
+                            placeholder="Type your answer here..."
+                            className="w-full h-40 p-4 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-transparent text-white placeholder-white/50 backdrop-blur-sm"
+                          />
+                          
+                          <div className="flex space-x-3 mt-4">
+                            <Button 
+                              onClick={nextQuestion} 
+                              disabled={!currentAnswer.trim()}
+                              className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white"
+                            >
+                              {currentQuestionIndex < currentQuestions.length - 1 ? (
+                                <>
+                                  Next Question
+                                  <ArrowRight className="h-4 w-4 ml-2" />
+                                </>
+                              ) : (
+                                <>
+                                  Complete Session
+                                  <CheckCircle className="h-4 w-4 ml-2" />
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-center py-8">
+                          <div className="w-24 h-24 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
+                            {isCallActive ? (
+                              <Mic className="h-12 w-12 text-purple-400 animate-pulse" />
+                            ) : (
+                              <Phone className="h-12 w-12 text-white/50" />
+                            )}
+                          </div>
+                          <div className="text-lg font-semibold mb-2 text-white">
+                            {isCallActive ? 'Interview Active' : 'Connecting...'}
+                          </div>
+                          {isCallActive && (
+                            <div className="space-y-4">
+                              <p className="text-white/80">Speak clearly and naturally</p>
+                              <Button
+                                onClick={endVoiceSession}
+                                variant="destructive"
+                                className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border-red-500/30"
+                              >
+                                <PhoneOff className="h-4 w-4 mr-2" />
+                                End Interview
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Session Info Sidebar */}
+                <div className="space-y-6">
+                  {/* Session Overview */}
+                  <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 shadow-lg slide-up">
+                    <CardHeader>
+                      <CardTitle className="text-white">Session Overview</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3 text-sm">
+                        <div className="flex justify-between">
+                          <span className="font-medium text-white/70">Type:</span>
+                          <Badge className="capitalize bg-cyan-500/20 text-cyan-300 border-cyan-500/30">{sessionType}</Badge>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-medium text-white/70">Duration:</span>
+                          <span className="text-white">5 minutes</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-medium text-white/70">Questions:</span>
+                          <span className="text-white">3 essential questions</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-medium text-white/70">Language:</span>
+                          <span className="text-white">{languages.find(l => l.code === selectedLanguage)?.name}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Questions Progress */}
+                  <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 shadow-lg slide-up">
+                    <CardHeader>
+                      <CardTitle className="text-white">Questions Progress</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {currentQuestions.map((_, index) => (
+                          <div 
+                            key={index} 
+                            className={`flex items-center space-x-3 text-sm ${
+                              index === currentQuestionIndex ? 'text-cyan-300 font-medium' : 
+                              index < currentQuestionIndex ? 'text-emerald-400' : 'text-white/50'
+                            }`}
+                          >
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                              index === currentQuestionIndex ? 'bg-cyan-500/20 text-cyan-300' :
+                              index < currentQuestionIndex ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/10 text-white/50'
+                            }`}>
+                              {index < currentQuestionIndex ? <CheckCircle className="h-3 w-3" /> : index + 1}
+                            </div>
+                            <span>Question {index + 1}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
