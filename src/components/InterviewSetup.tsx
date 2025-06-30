@@ -52,7 +52,7 @@ export const InterviewSetup = ({ onBack, onComplete }: InterviewSetupProps) => {
   const isComplete = industry && level && type && duration;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black relative overflow-hidden page-enter">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-1/2 -right-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
@@ -224,21 +224,27 @@ export const InterviewSetup = ({ onBack, onComplete }: InterviewSetupProps) => {
             </CardContent>
           </Card>
 
-          {/* Tips Card */}
+          {/* Tips Card - Fixed text visibility */}
           <Card className="mt-8 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 backdrop-blur-md border border-indigo-500/30 hover:from-indigo-500/25 hover:to-purple-500/25 transition-all duration-300 slide-up">
             <CardHeader>
-              <CardTitle className="text-white font-bold">💡 Pro Tips</CardTitle>
+              <CardTitle className="text-white font-bold flex items-center">
+                <span className="text-2xl mr-2">💡</span>
+                Pro Tips
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-3 gap-4 text-sm">
-                <div className="text-white/90 fade-in">
-                  <span className="font-semibold text-indigo-300">Be Specific:</span> Choose the exact industry and role you're targeting for the most relevant questions.
+                <div className="text-white fade-in">
+                  <span className="font-semibold text-indigo-300">Be Specific:</span> 
+                  <span className="text-white/90 ml-1">Choose the exact industry and role you're targeting for the most relevant questions.</span>
                 </div>
-                <div className="text-white/90 fade-in">
-                  <span className="font-semibold text-purple-300">Start Small:</span> Begin with shorter sessions to build confidence, then increase duration.
+                <div className="text-white fade-in">
+                  <span className="font-semibold text-purple-300">Start Small:</span> 
+                  <span className="text-white/90 ml-1">Begin with shorter sessions to build confidence, then increase duration.</span>
                 </div>
-                <div className="text-white/90 fade-in">
-                  <span className="font-semibold text-pink-300">Mix It Up:</span> Try different interview types to prepare for various scenarios.
+                <div className="text-white fade-in">
+                  <span className="font-semibold text-pink-300">Mix It Up:</span> 
+                  <span className="text-white/90 ml-1">Try different interview types to prepare for various scenarios.</span>
                 </div>
               </div>
             </CardContent>

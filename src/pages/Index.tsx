@@ -142,7 +142,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black relative overflow-hidden page-enter">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-1/2 -right-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
@@ -152,7 +152,7 @@ const Index = () => {
 
       <div className="relative z-10">
         {/* Header */}
-        <header className="container mx-auto px-6 py-6">
+        <header className="container mx-auto px-6 py-6 fade-in">
           <nav className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center shadow-lg">
@@ -203,17 +203,17 @@ const Index = () => {
         {/* Hero Section */}
         <section className="container mx-auto px-6 py-20 text-center">
           <div className="max-w-4xl mx-auto">
-            <Badge className="mb-6 bg-cyan-500/20 text-cyan-200 border-cyan-500/30 backdrop-blur-sm hover:bg-cyan-500/25">
+            <Badge className="mb-6 bg-cyan-500/20 text-cyan-200 border-cyan-500/30 backdrop-blur-sm hover:bg-cyan-500/25 fade-in">
               <Zap className="h-4 w-4 mr-1" />
               AI-Powered Interview Practice
             </Badge>
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent text-reveal">
               Master Your Next Interview with Neuro Ask
             </h1>
-            <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto text-reveal">
               Practice with our intelligent AI interviewer, get instant feedback, and boost your confidence with personalized interview preparation.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center scale-in">
               <Button 
                 size="lg" 
                 onClick={handleGetStarted}
@@ -237,7 +237,7 @@ const Index = () => {
 
         {/* Features Section */}
         <section className="container mx-auto px-6 py-20">
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 slide-up">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">Why Choose Neuro Ask?</h2>
             <p className="text-lg text-white/80 max-w-2xl mx-auto">
               Our AI-powered platform provides everything you need to excel in your next interview
@@ -245,7 +245,7 @@ const Index = () => {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+              <Card key={index} className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:shadow-2xl card-entrance">
                 <CardHeader className="text-center">
                   <div className="mx-auto mb-4 p-3 bg-white/10 backdrop-blur-sm rounded-full w-fit border border-white/20">
                     {feature.icon}
@@ -264,11 +264,11 @@ const Index = () => {
 
         {/* Industries Section */}
         <section className="container mx-auto px-6 py-20">
-          <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300">
+          <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 slide-up">
             <CardContent className="p-12">
               <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">Practice for Any Industry</h2>
-                <p className="text-lg text-white/80">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white text-reveal">Practice for Any Industry</h2>
+                <p className="text-lg text-white/80 text-reveal">
                   Tailored interview questions for your specific field and career level
                 </p>
               </div>
@@ -276,7 +276,7 @@ const Index = () => {
                 {industries.map((industry, index) => (
                   <Badge 
                     key={index} 
-                    className="px-4 py-2 text-sm bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-200 border-cyan-500/30 hover:from-cyan-500/30 hover:to-blue-500/30 cursor-pointer transition-all duration-200 backdrop-blur-sm"
+                    className="px-4 py-2 text-sm bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-200 border-cyan-500/30 hover:from-cyan-500/30 hover:to-blue-500/30 cursor-pointer transition-all duration-200 backdrop-blur-sm fade-in"
                   >
                     {industry}
                   </Badge>
@@ -289,18 +289,18 @@ const Index = () => {
         {/* CTA Section */}
         <section className="container mx-auto px-6 py-20 text-center">
           <div className="max-w-3xl mx-auto">
-            <Card className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 backdrop-blur-md border border-cyan-500/30 hover:from-cyan-500/25 hover:to-blue-500/25 transition-all duration-300">
+            <Card className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 backdrop-blur-md border border-cyan-500/30 hover:from-cyan-500/25 hover:to-blue-500/25 transition-all duration-300 scale-in">
               <CardContent className="p-12">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
                   Ready to Ace Your Interview?
                 </h2>
-                <p className="text-xl mb-8 text-slate-800 font-medium">
+                <p className="text-xl mb-8 text-white/80 font-medium">
                   Join thousands of professionals who have improved their interview skills with Neuro Ask
                 </p>
                 <Button 
                   size="lg" 
                   onClick={() => user ? setCurrentView('dashboard') : setCurrentView('signin')}
-                  className="bg-white/90 text-gray-900 hover:bg-white font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
                 >
                   Get Started for Free
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -311,7 +311,7 @@ const Index = () => {
         </section>
 
         {/* Footer */}
-        <footer className="container mx-auto px-6 py-12 border-t border-white/20">
+        <footer className="container mx-auto px-6 py-12 border-t border-white/20 fade-in">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
               <div className="w-6 h-6 bg-gradient-to-r from-cyan-400 to-blue-500 rounded"></div>
