@@ -381,240 +381,264 @@ Start with: "Hello! Thank you for joining us today. I'm excited to learn more ab
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50">
-      <div className="container mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center">
-            <Button variant="ghost" onClick={onBack} className="mr-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold">AI Voice Interview</h1>
-              <p className="text-muted-foreground">Practice your interview skills with our AI interviewer</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black relative overflow-hidden page-enter">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-1/2 -right-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div className="absolute -bottom-1/2 -left-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-cyan-500/5 rounded-full blur-2xl animate-float"></div>
+        <div className="absolute top-3/4 right-1/4 w-48 h-48 bg-indigo-500/5 rounded-full blur-2xl animate-pulse-slow"></div>
+      </div>
+
+      <div className="relative z-10">
+        <div className="container mx-auto px-6 py-8">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8 fade-in">
+            <div className="flex items-center">
+              <Button 
+                variant="ghost" 
+                onClick={onBack} 
+                className="mr-4 text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm border border-white/10"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-white text-reveal">AI Voice Interview</h1>
+                <p className="text-white/80 text-reveal">Practice your interview skills with our AI interviewer</p>
+              </div>
             </div>
+            {isCallActive && (
+              <div className="text-lg font-mono text-cyan-400 fade-in">
+                {formatTime(callDuration)} / {interviewConfig.duration}
+              </div>
+            )}
           </div>
-          {isCallActive && (
-            <div className="text-lg font-mono text-primary">
-              {formatTime(callDuration)} / {interviewConfig.duration}
-            </div>
-          )}
-        </div>
 
-        <div className="max-w-4xl mx-auto">
-          {/* Interview Configuration */}
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Interview Configuration</CardTitle>
-              <CardDescription>Your personalized interview setup</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2 mb-4">
-                <Badge variant="secondary">{interviewConfig.industry}</Badge>
-                <Badge variant="secondary">{interviewConfig.level}</Badge>
-                <Badge variant="secondary">{interviewConfig.type} Interview</Badge>
-                <Badge variant="secondary">{interviewConfig.duration}</Badge>
-              </div>
-              
-              {/* Language Selector */}
-              <div className="flex items-center space-x-2">
-                <Globe className="h-4 w-4 text-muted-foreground" />
-                <label className="text-sm font-medium">Interview Language:</label>
-                <Select value={selectedLanguage} onValueChange={setSelectedLanguage} disabled={isCallActive}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {languages.map((lang) => (
-                      <SelectItem key={lang.code} value={lang.code}>
-                        {lang.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Error State */}
-          {hasError && (
-            <Card className="mb-8 border-destructive/20 bg-destructive/5">
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-2 text-destructive">
-                  <AlertCircle className="h-5 w-5" />
-                  <div>
-                    <h3 className="font-semibold">Voice Interview Unavailable</h3>
-                    <p className="text-sm">There's an issue with the voice system. Please try the text interview instead.</p>
-                  </div>
-                </div>
-                <Button 
-                  onClick={onBack}
-                  className="mt-4 bg-destructive hover:bg-destructive/90"
-                >
-                  Try Text Interview
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Voice Interview Interface */}
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Call Controls */}
-            <Card>
+          <div className="max-w-4xl mx-auto">
+            {/* Interview Configuration */}
+            <Card className="mb-8 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 slide-up">
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Volume2 className="h-5 w-5 mr-2" />
-                  Voice Interview
-                </CardTitle>
-                <CardDescription>
-                  {!isInitialized 
-                    ? "Initializing voice system..."
-                    : isCallActive 
-                      ? "Interview in progress - speak naturally with the AI interviewer"
-                      : "Click start to begin your voice interview session"
-                  }
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Call Status */}
-                <div className="text-center py-8">
-                  <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-4 ${
-                    isCallActive ? 'bg-primary/10 animate-pulse' : hasError ? 'bg-destructive/10' : 'bg-muted'
-                  }`}>
-                    {isCallActive ? (
-                      <Phone className="h-10 w-10 text-primary" />
-                    ) : hasError ? (
-                      <AlertCircle className="h-10 w-10 text-destructive" />
-                    ) : (
-                      <PhoneOff className="h-10 w-10 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="text-lg font-semibold mb-2">
-                    {!isInitialized ? 'Initializing...' : 
-                     isEnding ? 'Ending Interview...' :
-                     isCallActive ? 'Interview Active' : 
-                     hasError ? 'System Error' : 'Ready to Start'}
-                  </div>
-                  {isCallActive && (
-                    <div className="text-2xl font-mono text-primary">
-                      {formatTime(callDuration)}
-                    </div>
-                  )}
-                </div>
-
-                {/* Controls */}
-                <div className="flex justify-center space-x-4">
-                  {!isCallActive && !hasError ? (
-                    <Button 
-                      onClick={startInterview}
-                      disabled={!isInitialized}
-                      className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
-                      size="lg"
-                    >
-                      <Phone className="h-4 w-4 mr-2" />
-                      {isInitialized ? 'Start Voice Interview' : 'Initializing...'}
-                    </Button>
-                  ) : isCallActive ? (
-                    <>
-                      <Button
-                        onClick={toggleMute}
-                        variant={isMuted ? "destructive" : "outline"}
-                        size="lg"
-                        disabled={isEnding}
-                      >
-                        {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                      </Button>
-                      <Button
-                        onClick={endInterview}
-                        variant="destructive"
-                        size="lg"
-                        disabled={isEnding}
-                      >
-                        {isEnding ? (
-                          <>
-                            <X className="h-4 w-4 mr-2 animate-spin" />
-                            Ending...
-                          </>
-                        ) : (
-                          <>
-                            <PhoneOff className="h-4 w-4 mr-2" />
-                            End Interview
-                          </>
-                        )}
-                      </Button>
-                    </>
-                  ) : null}
-                </div>
-
-                {/* Alternative option */}
-                {!isCallActive && (
-                  <div className="text-center p-4 bg-primary/5 rounded-lg">
-                    <p className="text-sm text-primary/70 mb-2">
-                      {hasError ? "Voice system unavailable?" : "Prefer typing?"}
-                    </p>
-                    <Button 
-                      onClick={onBack}
-                      variant="outline" 
-                      size="sm"
-                      className="text-primary border-primary/30"
-                    >
-                      Try Text Interview Instead
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Live Conversation */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Live Conversation</CardTitle>
-                <CardDescription>Real-time transcript of your interview</CardDescription>
+                <CardTitle className="text-white">Interview Configuration</CardTitle>
+                <CardDescription className="text-white/80">Your personalized interview setup</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-64 overflow-y-auto bg-muted/50 rounded-lg p-4 space-y-2">
-                  {conversationMessages.length === 0 ? (
-                    <div className="text-center text-muted-foreground py-8">
-                      <Mic className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p>Conversation will appear here once started</p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Badge variant="secondary" className="bg-cyan-500/20 text-cyan-200 border-cyan-500/30">
+                    {interviewConfig.industry}
+                  </Badge>
+                  <Badge variant="secondary" className="bg-blue-500/20 text-blue-200 border-blue-500/30">
+                    {interviewConfig.level}
+                  </Badge>
+                  <Badge variant="secondary" className="bg-purple-500/20 text-purple-200 border-purple-500/30">
+                    {interviewConfig.type} Interview
+                  </Badge>
+                  <Badge variant="secondary" className="bg-green-500/20 text-green-200 border-green-500/30">
+                    {interviewConfig.duration}
+                  </Badge>
+                </div>
+                
+                {/* Language Selector */}
+                <div className="flex items-center space-x-2">
+                  <Globe className="h-4 w-4 text-white/70" />
+                  <label className="text-sm font-medium text-white/90">Interview Language:</label>
+                  <Select value={selectedLanguage} onValueChange={setSelectedLanguage} disabled={isCallActive}>
+                    <SelectTrigger className="w-40 bg-white/10 border-white/20 text-white backdrop-blur-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-900/95 border-white/20 backdrop-blur-md">
+                      {languages.map((lang) => (
+                        <SelectItem key={lang.code} value={lang.code} className="text-white hover:bg-white/10">
+                          {lang.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Error State */}
+            {hasError && (
+              <Card className="mb-8 border-red-500/20 bg-red-500/10 backdrop-blur-md slide-up">
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-2 text-red-300">
+                    <AlertCircle className="h-5 w-5" />
+                    <div>
+                      <h3 className="font-semibold">Voice Interview Unavailable</h3>
+                      <p className="text-sm">There's an issue with the voice system. Please try the text interview instead.</p>
                     </div>
-                  ) : (
-                    conversationMessages.map((message, index) => (
-                      <div key={index} className="bg-background p-2 rounded border text-sm">
-                        {message}
+                  </div>
+                  <Button 
+                    onClick={onBack}
+                    className="mt-4 bg-red-500/80 hover:bg-red-500/90 text-white"
+                  >
+                    Try Text Interview
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Voice Interview Interface */}
+            <div className="grid lg:grid-cols-2 gap-8">
+              {/* Call Controls */}
+              <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 card-entrance">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-white">
+                    <Volume2 className="h-5 w-5 mr-2" />
+                    Voice Interview
+                  </CardTitle>
+                  <CardDescription className="text-white/90">
+                    {!isInitialized 
+                      ? "Initializing voice system..."
+                      : isCallActive 
+                        ? "Interview in progress - speak naturally with the AI interviewer"
+                        : "Click start to begin your voice interview session"
+                    }
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Call Status */}
+                  <div className="text-center py-8">
+                    <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-4 transition-all duration-300 ${
+                      isCallActive ? 'bg-cyan-500/20 animate-pulse border border-cyan-500/40' : hasError ? 'bg-red-500/20 border border-red-500/40' : 'bg-white/10 border border-white/20'
+                    }`}>
+                      {isCallActive ? (
+                        <Phone className="h-10 w-10 text-cyan-400" />
+                      ) : hasError ? (
+                        <AlertCircle className="h-10 w-10 text-red-400" />
+                      ) : (
+                        <PhoneOff className="h-10 w-10 text-white/70" />
+                      )}
+                    </div>
+                    <div className="text-lg font-semibold mb-2 text-white">
+                      {!isInitialized ? 'Initializing...' : 
+                       isEnding ? 'Ending Interview...' :
+                       isCallActive ? 'Interview Active' : 
+                       hasError ? 'System Error' : 'Ready to Start'}
+                    </div>
+                    {isCallActive && (
+                      <div className="text-2xl font-mono text-cyan-400">
+                        {formatTime(callDuration)}
                       </div>
-                    ))
+                    )}
+                  </div>
+
+                  {/* Controls */}
+                  <div className="flex justify-center space-x-4">
+                    {!isCallActive && !hasError ? (
+                      <Button 
+                        onClick={startInterview}
+                        disabled={!isInitialized}
+                        className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                        size="lg"
+                      >
+                        <Phone className="h-4 w-4 mr-2" />
+                        {isInitialized ? 'Start Voice Interview' : 'Initializing...'}
+                      </Button>
+                    ) : isCallActive ? (
+                      <>
+                        <Button
+                          onClick={toggleMute}
+                          variant={isMuted ? "destructive" : "outline"}
+                          size="lg"
+                          disabled={isEnding}
+                          className={isMuted ? "" : "bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"}
+                        >
+                          {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                        </Button>
+                        <Button
+                          onClick={endInterview}
+                          variant="destructive"
+                          size="lg"
+                          disabled={isEnding}
+                          className="bg-red-500/80 hover:bg-red-500/90"
+                        >
+                          {isEnding ? (
+                            <>
+                              <X className="h-4 w-4 mr-2 animate-spin" />
+                              Ending...
+                            </>
+                          ) : (
+                            <>
+                              <PhoneOff className="h-4 w-4 mr-2" />
+                              End Interview
+                            </>
+                          )}
+                        </Button>
+                      </>
+                    ) : null}
+                  </div>
+
+                  {/* Alternative option */}
+                  {!isCallActive && (
+                    <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10 backdrop-blur-sm">
+                      <p className="text-sm text-white/70 mb-2">
+                        {hasError ? "Voice system unavailable?" : "Prefer typing?"}
+                      </p>
+                      <Button 
+                        onClick={onBack}
+                        variant="outline" 
+                        size="sm"
+                        className="text-white border-white/30 bg-white/10 hover:bg-white/20 backdrop-blur-sm"
+                      >
+                        Try Text Interview Instead
+                      </Button>
+                    </div>
                   )}
+                </CardContent>
+              </Card>
+
+              {/* Live Conversation */}
+              <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 card-entrance">
+                <CardHeader>
+                  <CardTitle className="text-white">Live Conversation</CardTitle>
+                  <CardDescription className="text-white/80">Real-time transcript of your interview</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64 overflow-y-auto bg-white/5 rounded-lg p-4 space-y-2 border border-white/10">
+                    {conversationMessages.length === 0 ? (
+                      <div className="text-center text-white/60 py-8">
+                        <Mic className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>Conversation will appear here once started</p>
+                      </div>
+                    ) : (
+                      conversationMessages.map((message, index) => (
+                        <div key={index} className="bg-white/10 p-2 rounded border border-white/10 text-sm text-white backdrop-blur-sm fade-in">
+                          {message}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Instructions */}
+            <Card className="mt-8 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 backdrop-blur-md border border-cyan-500/30 hover:from-cyan-500/25 hover:to-blue-500/25 transition-all duration-300 scale-in">
+              <CardContent className="p-6">
+                <h3 className="font-semibold mb-3 text-white">Interview Tips</h3>
+                <div className="grid md:grid-cols-2 gap-4 text-sm text-white/80">
+                  <div className="fade-in">
+                    <p className="font-medium mb-1 text-cyan-300">🎤 Audio Quality</p>
+                    <p>Ensure you're in a quiet environment with a good microphone</p>
+                  </div>
+                  <div className="fade-in">
+                    <p className="font-medium mb-1 text-blue-300">💬 Speaking</p>
+                    <p>Speak clearly and at a normal pace, just like a real interview</p>
+                  </div>
+                  <div className="fade-in">
+                    <p className="font-medium mb-1 text-purple-300">⏱️ Timing</p>
+                    <p>Your interview is set for {interviewConfig.duration} - pace yourself accordingly</p>
+                  </div>
+                  <div className="fade-in">
+                    <p className="font-medium mb-1 text-green-300">🛑 Stop Anytime</p>
+                    <p>Say "stop interview" or click the End Interview button to conclude early</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
-
-          {/* Instructions */}
-          <Card className="mt-8 bg-primary/5 border-primary/20">
-            <CardContent className="p-6">
-              <h3 className="font-semibold mb-3 text-primary">Interview Tips</h3>
-              <div className="grid md:grid-cols-2 gap-4 text-sm text-primary/70">
-                <div>
-                  <p className="font-medium mb-1">🎤 Audio Quality</p>
-                  <p>Ensure you're in a quiet environment with a good microphone</p>
-                </div>
-                <div>
-                  <p className="font-medium mb-1">💬 Speaking</p>
-                  <p>Speak clearly and at a normal pace, just like a real interview</p>
-                </div>
-                <div>
-                  <p className="font-medium mb-1">⏱️ Timing</p>
-                  <p>Your interview is set for {interviewConfig.duration} - pace yourself accordingly</p>
-                </div>
-                <div>
-                  <p className="font-medium mb-1">🛑 Stop Anytime</p>
-                  <p>Say "stop interview" or click the End Interview button to conclude early</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>

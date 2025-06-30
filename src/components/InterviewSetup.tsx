@@ -181,7 +181,7 @@ export const InterviewSetup = ({ onBack, onComplete }: InterviewSetupProps) => {
                     {proTips.map((tip, index) => (
                       <div key={index} className="flex items-start space-x-2 fade-in">
                         <div className="w-2 h-2 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full mt-2 flex-shrink-0"></div>
-                        <p className="text-sm text-white/90 leading-relaxed">{tip}</p>
+                        <p className="text-sm text-white leading-relaxed">{tip}</p>
                       </div>
                     ))}
                   </div>
@@ -192,10 +192,10 @@ export const InterviewSetup = ({ onBack, onComplete }: InterviewSetupProps) => {
                 <CardHeader>
                   <CardTitle className="flex items-center text-white">
                     <Target className="h-5 w-5 mr-2 text-green-400" />
-                    Quick Start
+                    Ready to Ace Your Interview?
                   </CardTitle>
                   <CardDescription className="text-white/90">
-                    Ready to jump in? Try these popular configurations
+                    Quick tips to get you started
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
