@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,12 +15,19 @@ interface UserProfileProps {
 
 export const UserProfile = ({ user, onBack, onLogout }: UserProfileProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingConfig, setIsEditingConfig] = useState(false);
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
     email: user?.email || '',
     industry: user?.industry || '',
     level: user?.level || '',
     preferredType: user?.preferredType || ''
+  });
+  const [interviewConfig, setInterviewConfig] = useState({
+    industry: user?.interviewConfig?.industry || 'Software Engineering',
+    level: user?.interviewConfig?.level || 'Mid Level',
+    type: user?.interviewConfig?.type || 'Technical',
+    duration: user?.interviewConfig?.duration || '30 minutes'
   });
   const { toast } = useToast();
 
@@ -40,6 +46,14 @@ export const UserProfile = ({ user, onBack, onLogout }: UserProfileProps) => {
       description: "Your profile has been successfully updated.",
     });
     setIsEditing(false);
+  };
+
+  const handleSaveConfig = () => {
+    toast({
+      title: "Interview Configuration Updated",
+      description: "Your interview preferences have been successfully updated.",
+    });
+    setIsEditingConfig(false);
   };
 
   const handleLogout = () => {
@@ -92,7 +106,8 @@ export const UserProfile = ({ user, onBack, onLogout }: UserProfileProps) => {
 
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Profile Form */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 space-y-6">
+              {/* Profile Information */}
               <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 slide-up">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -209,6 +224,133 @@ export const UserProfile = ({ user, onBack, onLogout }: UserProfileProps) => {
                       </Button>
                       <Button 
                         onClick={() => setIsEditing(false)}
+                        variant="outline"
+                        className="bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Interview Configuration */}
+              <Card className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 slide-up">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center text-white">
+                        <Settings className="h-5 w-5 mr-2" />
+                        Interview Configuration
+                      </CardTitle>
+                      <CardDescription className="text-white/80">
+                        Update your default interview settings
+                      </CardDescription>
+                    </div>
+                    <Button
+                      onClick={() => setIsEditingConfig(!isEditingConfig)}
+                      variant="outline"
+                      size="sm"
+                      className="bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      {isEditingConfig ? 'Cancel' : 'Edit'}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-white/90">Default Industry</Label>
+                      <Select 
+                        value={interviewConfig.industry} 
+                        onValueChange={(value) => setInterviewConfig({...interviewConfig, industry: value})}
+                        disabled={!isEditingConfig}
+                      >
+                        <SelectTrigger className="bg-white/10 border-white/20 text-white backdrop-blur-sm disabled:opacity-60">
+                          <SelectValue placeholder="Select industry" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-900/95 border-white/20 backdrop-blur-md">
+                          {industries.map((industry) => (
+                            <SelectItem key={industry} value={industry} className="text-white hover:bg-white/10">
+                              {industry}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-white/90">Default Level</Label>
+                      <Select 
+                        value={interviewConfig.level} 
+                        onValueChange={(value) => setInterviewConfig({...interviewConfig, level: value})}
+                        disabled={!isEditingConfig}
+                      >
+                        <SelectTrigger className="bg-white/10 border-white/20 text-white backdrop-blur-sm disabled:opacity-60">
+                          <SelectValue placeholder="Select level" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-900/95 border-white/20 backdrop-blur-md">
+                          {levels.map((level) => (
+                            <SelectItem key={level} value={level} className="text-white hover:bg-white/10">
+                              {level}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-white/90">Default Type</Label>
+                      <Select 
+                        value={interviewConfig.type} 
+                        onValueChange={(value) => setInterviewConfig({...interviewConfig, type: value})}
+                        disabled={!isEditingConfig}
+                      >
+                        <SelectTrigger className="bg-white/10 border-white/20 text-white backdrop-blur-sm disabled:opacity-60">
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-900/95 border-white/20 backdrop-blur-md">
+                          {types.map((type) => (
+                            <SelectItem key={type} value={type} className="text-white hover:bg-white/10">
+                              {type}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-white/90">Default Duration</Label>
+                      <Select 
+                        value={interviewConfig.duration} 
+                        onValueChange={(value) => setInterviewConfig({...interviewConfig, duration: value})}
+                        disabled={!isEditingConfig}
+                      >
+                        <SelectTrigger className="bg-white/10 border-white/20 text-white backdrop-blur-sm disabled:opacity-60">
+                          <SelectValue placeholder="Select duration" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-900/95 border-white/20 backdrop-blur-md">
+                          {["15 minutes", "30 minutes", "45 minutes", "60 minutes"].map((duration) => (
+                            <SelectItem key={duration} value={duration} className="text-white hover:bg-white/10">
+                              {duration}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {isEditingConfig && (
+                    <div className="flex space-x-3">
+                      <Button 
+                        onClick={handleSaveConfig}
+                        className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                      >
+                        Save Configuration
+                      </Button>
+                      <Button 
+                        onClick={() => setIsEditingConfig(false)}
                         variant="outline"
                         className="bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
                       >
