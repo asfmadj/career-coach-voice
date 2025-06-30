@@ -7,10 +7,11 @@ import { ArrowLeft, Star, TrendingUp, Clock, Target, CheckCircle, AlertTriangle 
 
 interface SessionReviewProps {
   onBack: () => void;
+  session?: any;
   sessionData?: any;
 }
 
-export const SessionReview = ({ onBack, sessionData }: SessionReviewProps) => {
+export const SessionReview = ({ onBack, session, sessionData }: SessionReviewProps) => {
   const mockSessionData = {
     date: new Date().toLocaleDateString(),
     duration: "25 minutes",
@@ -31,7 +32,7 @@ export const SessionReview = ({ onBack, sessionData }: SessionReviewProps) => {
     ]
   };
 
-  const data = sessionData || mockSessionData;
+  const data = session || sessionData || mockSessionData;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black relative overflow-hidden page-enter">
@@ -89,7 +90,7 @@ export const SessionReview = ({ onBack, sessionData }: SessionReviewProps) => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-white/80">Level:</span>
-                        <span className="text-white font-medium">{data.level}</span>
+                        <span className="text-white font-medium">{data.level || data.type}</span>
                       </div>
                     </div>
                     <div className="text-center">
@@ -117,7 +118,7 @@ export const SessionReview = ({ onBack, sessionData }: SessionReviewProps) => {
                         Strengths
                       </h4>
                       <div className="space-y-2">
-                        {data.strengths.map((strength: string, index: number) => (
+                        {(data.strengths || []).map((strength: string, index: number) => (
                           <div key={index} className="flex items-center space-x-2 fade-in">
                             <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                             <span className="text-white/90 text-sm">{strength}</span>
@@ -131,7 +132,7 @@ export const SessionReview = ({ onBack, sessionData }: SessionReviewProps) => {
                         Areas for Improvement
                       </h4>
                       <div className="space-y-2">
-                        {data.improvements.map((improvement: string, index: number) => (
+                        {(data.improvements || []).map((improvement: string, index: number) => (
                           <div key={index} className="flex items-center space-x-2 fade-in">
                             <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
                             <span className="text-white/90 text-sm">{improvement}</span>
@@ -154,7 +155,7 @@ export const SessionReview = ({ onBack, sessionData }: SessionReviewProps) => {
                 <CardContent className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-white/80">Questions Answered:</span>
-                    <span className="font-medium text-white">{data.questionsAnswered}</span>
+                    <span className="font-medium text-white">{data.questionsAnswered || data.questions?.length || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/80">Average Response:</span>
