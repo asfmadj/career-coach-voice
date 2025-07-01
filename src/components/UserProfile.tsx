@@ -367,24 +367,24 @@ export const UserProfile = ({ user, onBack, onLogout }: UserProfileProps) => {
               {/* Account Stats */}
               <Card className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 backdrop-blur-md border border-blue-500/30 hover:from-blue-500/25 hover:to-cyan-500/25 transition-all duration-300 card-entrance">
                 <CardHeader>
-                  <CardTitle className="text-white">Account Stats</CardTitle>
+                  <CardTitle className="text-black">Account Stats</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-white/80">Sessions Completed:</span>
-                    <span className="font-bold text-white">24</span>
+                    <span className="text-black/80">Sessions Completed:</span>
+                    <span className="font-bold text-black">24</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-white/80">Average Score:</span>
-                    <span className="font-bold text-white">85%</span>
+                    <span className="text-black/80">Average Score:</span>
+                    <span className="font-bold text-black">85%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-white/80">Hours Practiced:</span>
-                    <span className="font-bold text-white">12.5</span>
+                    <span className="text-black/80">Hours Practiced:</span>
+                    <span className="font-bold text-black">12.5</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-white/80">Member Since:</span>
-                    <span className="font-bold text-white">Jan 2024</span>
+                    <span className="text-black/80">Member Since:</span>
+                    <span className="font-bold text-black">Jan 2024</span>
                   </div>
                 </CardContent>
               </Card>
@@ -392,7 +392,7 @@ export const UserProfile = ({ user, onBack, onLogout }: UserProfileProps) => {
               {/* Settings */}
               <Card className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-md border border-purple-500/30 hover:from-purple-500/25 hover:to-pink-500/25 transition-all duration-300 scale-in">
                 <CardHeader>
-                  <CardTitle className="flex items-center text-white">
+                  <CardTitle className="flex items-center text-black">
                     <Settings className="h-5 w-5 mr-2" />
                     Quick Settings
                   </CardTitle>
@@ -401,21 +401,21 @@ export const UserProfile = ({ user, onBack, onLogout }: UserProfileProps) => {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
+                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-black border-white/20 backdrop-blur-sm"
                   >
                     Notification Preferences
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
+                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-black border-white/20 backdrop-blur-sm"
                   >
                     Privacy Settings
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
+                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-black border-white/20 backdrop-blur-sm"
                   >
                     Data Export
                   </Button>
