@@ -168,11 +168,11 @@ export const InterviewSetup = ({ onBack, onComplete }: InterviewSetupProps) => {
             <div className="space-y-6">
               <Card className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-md border border-purple-500/30 hover:from-purple-500/25 hover:to-pink-500/25 transition-all duration-300 slide-up">
                 <CardHeader>
-                  <CardTitle className="flex items-center text-white">
+                  <CardTitle className="flex items-center text-black">
                     <Lightbulb className="h-5 w-5 mr-2 text-yellow-400" />
                     💡 Pro Tips
                   </CardTitle>
-                  <CardDescription className="text-white/90">
+                  <CardDescription className="text-black/90">
                     Expert advice for interview success
                   </CardDescription>
                 </CardHeader>
@@ -181,7 +181,7 @@ export const InterviewSetup = ({ onBack, onComplete }: InterviewSetupProps) => {
                     {proTips.map((tip, index) => (
                       <div key={index} className="flex items-start space-x-2 fade-in">
                         <div className="w-2 h-2 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full mt-2 flex-shrink-0"></div>
-                        <p className="text-sm text-white leading-relaxed">{tip}</p>
+                        <p className="text-sm text-black leading-relaxed">{tip}</p>
                       </div>
                     ))}
                   </div>
@@ -208,7 +208,7 @@ export const InterviewSetup = ({ onBack, onComplete }: InterviewSetupProps) => {
                       setType("Technical");
                       setDuration("30 minutes");
                     }}
-                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
+                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-black border-white/20 backdrop-blur-sm"
                   >
                     <Clock className="h-4 w-4 mr-2" />
                     Tech Interview (30 min)
@@ -222,7 +222,7 @@ export const InterviewSetup = ({ onBack, onComplete }: InterviewSetupProps) => {
                       setType("Behavioral");
                       setDuration("15 minutes");
                     }}
-                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
+                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-black border-white/20 backdrop-blur-sm"
                   >
                     <Clock className="h-4 w-4 mr-2" />
                     Entry Level (15 min)
