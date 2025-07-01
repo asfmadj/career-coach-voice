@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -150,20 +149,20 @@ export const SessionReview = ({ onBack, session, sessionData }: SessionReviewPro
               {/* Quick Stats */}
               <Card className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 backdrop-blur-md border border-blue-500/30 hover:from-blue-500/25 hover:to-cyan-500/25 transition-all duration-300 card-entrance">
                 <CardHeader>
-                  <CardTitle className="text-white">Session Stats</CardTitle>
+                  <CardTitle className="text-black">Session Stats</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-white/80">Questions Answered:</span>
-                    <span className="font-medium text-white">{data.questionsAnswered || data.questions?.length || 'N/A'}</span>
+                    <span className="text-black/80">Questions Answered:</span>
+                    <span className="font-medium text-black">{data.questionsAnswered || data.questions?.length || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-white/80">Average Response:</span>
-                    <span className="font-medium text-white">2.5 min</span>
+                    <span className="text-black/80">Average Response:</span>
+                    <span className="font-medium text-black">2.5 min</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-white/80">Confidence Level:</span>
-                    <span className="font-medium text-white">High</span>
+                    <span className="text-black/80">Confidence Level:</span>
+                    <span className="font-medium text-black">High</span>
                   </div>
                 </CardContent>
               </Card>
@@ -171,13 +170,13 @@ export const SessionReview = ({ onBack, session, sessionData }: SessionReviewPro
               {/* Next Steps */}
               <Card className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-md border border-green-500/30 hover:from-green-500/25 hover:to-emerald-500/25 transition-all duration-300 scale-in">
                 <CardHeader>
-                  <CardTitle className="text-white">Recommended Next Steps</CardTitle>
+                  <CardTitle className="text-black">Recommended Next Steps</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
+                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-black border-white/20 backdrop-blur-sm"
                   >
                     <Clock className="h-4 w-4 mr-2" />
                     Practice System Design
@@ -185,7 +184,7 @@ export const SessionReview = ({ onBack, session, sessionData }: SessionReviewPro
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
+                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-black border-white/20 backdrop-blur-sm"
                   >
                     <Target className="h-4 w-4 mr-2" />
                     Behavioral Questions
@@ -193,7 +192,7 @@ export const SessionReview = ({ onBack, session, sessionData }: SessionReviewPro
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
+                    className="w-full justify-start bg-white/10 hover:bg-white/20 text-black border-white/20 backdrop-blur-sm"
                   >
                     <AlertTriangle className="h-4 w-4 mr-2" />
                     Mock Interview

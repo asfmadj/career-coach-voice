@@ -314,7 +314,7 @@ const Index = () => {
                 <h2 className="text-3xl md:text-4xl font-bold mb-4 text-black">
                   Ready to Ace Your Interview?
                 </h2>
-                <p className="text-xl mb-8 text-white/90 font-medium">
+                <p className="text-xl mb-8 text-black/90 font-medium">
                   Join thousands of professionals who have improved their interview skills with Neuro Ask
                 </p>
                 <Button 
